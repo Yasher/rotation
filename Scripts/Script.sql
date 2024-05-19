@@ -1,0 +1,1 @@
+SELECT h.person , h.shift , p.fio FROM history h LEFT JOIN person p ON h.person = p.id ;

@@ -1,0 +1,49 @@
+{
+	"folders": {},
+	"connections": {
+		"sqlite_jdbc-18f766d06e0-14de31273bef91e9": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "db_test",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/pythonProject2/db_test",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/db_test",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-18f77469e03-23a29c711403de2c": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/pythonProject2/rotation.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/rotation.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"smart-commit": false,
+			"smart-commit-recover": false,
+			"auto-close-transactions": true,
+			"close-transactions-period": 1800,
+			"auto-close-connections": true,
+			"close-connections-period": 14400
+		}
+	}
+}
