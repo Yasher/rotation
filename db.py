@@ -3,6 +3,7 @@ import sqlite3
 db = sqlite3.connect('rotation.db')
 c = db.cursor()
 
+
 def get_shifts ():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
@@ -28,9 +29,12 @@ def get_shifts ():
     db.close()
 
 
-get_shifts()
 
-def find_person_id_for_id_tg(id_tg):
+
+
+
+
+def find_person_id_for_tg_id(id_tg):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
@@ -44,18 +48,40 @@ def find_person_id_for_id_tg(id_tg):
     db.close()
 
 
-def insert_choice(choice, id_tg):
+def insert_choice(choice, tg_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
-    person_id = find_person_id_for_id_tg(id_tg)
+    person_id = find_person_id_for_tg_id(tg_id)
     print(person_id)
+    count = 0
     for i in choice:
-        query = "INSERT INTO current (person_id, shift_id, priority) VALUES ('"+str(person_id)+"', "+str(i)+", "+str(choice.index(i))+")"
+        if i[1] == str(tg_id):
+            query = """INSERT INTO current (person_id, shift_id, priority) VALUES (?, ?, ?)"""
+        # query = f'"""INSERT INTO current (person_id, shift_id, priority) VALUES ('
+        # {str(person_id)}
+        # ', "+str(i)+", "+str(choice.index(i))+")"""
+
         # print(query)
-        c.execute(query)
+            c.execute(query, (str(person_id), str(i[0]), count))
+            count += 1
     db.commit()
     db.close()
+
+def get_chosen_shift(tg_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    query="""SELECT c.priority, s.fullname, p.tg_id FROM "current" c JOIN shifts s ON c.shift_id = s.id JOIN person p ON c.person_id = p.id WHERE p.tg_id = ? ORDER BY p.tg_id, c.priority"""
+
+    c.execute(query, (str(tg_id), ))
+    shifts = c.fetchall()
+    return shifts
+    db.commit()
+    db.close()
+
+
+# choice = [[2, '181564144'], [4, '181564144'], [5, '181564144'], [2, '663014633'], [1, '181564144']]
+# insert_choice(choice,"181564144")
 
 
 
