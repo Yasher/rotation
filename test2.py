@@ -5,7 +5,7 @@ import config
 
 bot = telebot.TeleBot(config.config['token'])
 
-
+123
 
 @bot.message_handler(commands=['start']) #создаем команду
 def start(message):

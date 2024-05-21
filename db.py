@@ -130,6 +130,139 @@ WHERE
     db.commit()
     db.close()
 
+
+def check_shifts_persons_count():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    shifts = 0
+    persons = 0
+
+    query = """SELECT
+	SUM(s.quant)
+FROM
+	shifts s
+WHERE
+	s.enabled = 1"""
+
+    c.execute(query)
+    shifts = c.fetchone()[0]
+    print(shifts)
+
+    query = """SELECT
+	sum(p.enabled)
+FROM
+	person p
+WHERE
+	enabled = 1"""
+
+    c.execute(query)
+    persons = c.fetchone()[0]
+    print(persons)
+
+    if shifts != persons:
+        return False
+    else:
+        return True
+    db.commit()
+    db.close()
+
+def random_insert_current():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    import random
+    a=random.sample(range(5), 5)
+    print (a)
+
+    query = """INSERT INTO current (person_id, shift_id, priority) VALUES (?, ?, ?)
+    """
+    p=1
+
+    while p<9:
+        n = 1
+        a = random.sample(range(5), 5)
+        for i in a:
+            print(p, n, i)
+            c.execute(query, (p, n, i))
+            n += 1
+        p += 1
+
+    db.commit()
+    db.close()
+
+#random_insert_current()
+
+def get_voting_table(priority):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    query = """SELECT
+	person_id ,
+	shift_id ,
+	priority
+FROM
+	"current" c
+WHERE
+	priority = ?
+    """
+    c.execute(query, (priority, ))
+    return c.fetchall()
+
+    db.commit()
+    db.close()
+
+
+#print(get_voting_table(0))
+
+def get_person_count():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    query = """SELECT
+    	sum(p.enabled)
+    FROM
+    	person p
+    WHERE
+    	enabled = 1"""
+
+    c.execute(query)
+    return c.fetchone()[0]
+
+    db.commit()
+    db.close()
+
+#рассчитать коэффициент сотрудника по определенной смене
+
+#### rotation_period=202406 предусмотреть изменение
+def get_shift_ratio (shift, rotation_period=202406):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    p_count = get_person_count()
+    ratio = []
+    for i in range(p_count):
+        query = """SELECT
+	period 
+from
+	history h
+WHERE
+	shift_id = ?
+AND person_id = ?
+ORDER BY
+	period DESC
+LIMIT 1
+"""
+        c.execute(query, (shift, i+1))
+        last_period = c.fetchone()
+        ratio.append([i+1, last_period])
+    return ratio
+    db.commit()
+    db.close()
+
+print(get_shift_ratio(2))
+
+### записать всем ratio = (rotation_period - last_period) в месяцах, а тому у кого None ratio = 1000
+
 #delete_user_from_current('181564144')
 # choice = [[2, '181564144'], [4, '181564144'], [5, '181564144'], [2, '663014633'], [1, '181564144']]
 # insert_choice(choice,"181564144")

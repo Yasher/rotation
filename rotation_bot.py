@@ -1,4 +1,7 @@
 ## сделать проверку на то что tg_id из списка
+
+#
+
 import time
 
 ## предусмотреть, если юзер не нажмет кнопку, а напишет ченить
@@ -13,6 +16,8 @@ import db
 import config
 
 bot = telebot.TeleBot(config.config['token'])
+
+
 
 shifts = db.get_shifts() # получаем список кортежей [(id_смены, имя_смены, tg_id), (x,x,x) (y,y,y)]
 
@@ -75,7 +80,7 @@ def delete_userdata_from_choice(tg_id):
     #####
     global choice
     i = 0
-    while True:
+   while True:
         try:
             if str(tg_id) in choice[i]:
                 choice.remove(choice[i])
@@ -109,41 +114,23 @@ def delete_userdata_from_choice(tg_id):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    tg_id = message.from_user.id
 
-    db.delete_user_from_current(tg_id)
-    delete_userdata_from_shifts(tg_id)
-    add_userdata_to_shifts(tg_id)
-    delete_userdata_from_choice(tg_id)
-    # global shifts
-    # shifts = db.get_shifts()
-    # global choice
-    # choice = delete_userdata_from_choice(choice, tg_id)
-    get_count(tg_id)
+    if db.check_shifts_persons_count() == False:
+        bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+    else:
 
+        tg_id = message.from_user.id
 
-    # button1 = types.InlineKeyboardButton("20:30 - 8:30 ", callback_data = "1")
-    # button2 = types.InlineKeyboardButton("8:30 - 20:30 ", callback_data = "2")
-    # markup.add(button1)
-    # markup.add(button2)
-    # global sss
-    # sss = 765
+        db.delete_user_from_current(tg_id)
+        delete_userdata_from_shifts(tg_id)
+        add_userdata_to_shifts(tg_id)
+        delete_userdata_from_choice(tg_id)
 
-    ### записываем словарь: tg_id - количество смен
-    # count = 0
-    # for i in shifts:
-    #     if i[2] == str(tg_id):
-    #         count = count + 1
-    # #count_shifts.append([tg_id, count])
-    # count_shifts[tg_id] = count
-    # print (count_shifts)
-
-
-
-    msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup = make_markup(tg_id))
+        get_count(tg_id)
+        msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup = make_markup(tg_id))
 
 # @bot.message_handler(commands=['start']) #создаем команду
-# def start(message):
+
 
 def get_count (tg_id):
     count = 0
