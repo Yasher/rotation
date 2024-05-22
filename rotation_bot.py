@@ -115,7 +115,7 @@ def delete_userdata_from_choice(tg_id):
 @bot.message_handler(commands=['start'])
 def start(message):
     tg_id = message.from_user.id
-
+curren
     if db.get_person_id_from_tg_id(tg_id) == 0:
         bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
     else:

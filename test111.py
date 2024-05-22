@@ -33,10 +33,20 @@ lll = []
 # lll.append(1)
 # lll.append('sdf12dfsd')
 # lll.append(3)
+# #
+# n=1
+# match n:
+#     case n>1:
+#         print(">1")
+#     case n<1:
+#         print("<1")
+#     case 1:
+#         print("=1")
+#
 
-print(len(lll))
+sss = {'q': 2, 'e': 4, 't': 5}
+print(sss)
 
-# lll.remove
-if 'sdf' in lll[1]:
-    print("sdf")
-print(lll)
+sss['e'] -= 5
+
+print(sss)

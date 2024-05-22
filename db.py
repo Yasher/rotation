@@ -43,7 +43,7 @@ def get_shifts (tg_id=0):
     # query = "SELECT id, fullname  FROM shifts s WHERE enabled = 1"
         c.execute(query)
     shifts = c.fetchall()
-    print(shifts)
+    #print(shifts)
     return shifts
     db.commit()
     db.close()
@@ -195,6 +195,8 @@ def random_insert_current():
     db.commit()
     db.close()
 
+
+
 #random_insert_current()
 
 def get_voting_table(priority):
@@ -262,6 +264,8 @@ ORDER BY
 	period DESC
 LIMIT 1
 """
+#Здесь можно будет поставить ограничение по давности проверки
+
         c.execute(query, (shift, i+1))
         last_period = c.fetchone()
         if last_period != None:
@@ -275,8 +279,8 @@ LIMIT 1
     db.commit()
     db.close()
 #
-a = get_shift_rates(3)
-print(a)
+#a = get_shift_rates(3)
+#print(a)
 # now = datetime.datetime.now()
 # print(now)
 #
@@ -291,11 +295,16 @@ print(a)
 #delete_user_from_current('181564144')
 # choice = [[2, '181564144'], [4, '181564144'], [5, '181564144'], [2, '663014633'], [1, '181564144']]
 # insert_choice(choice,"181564144")
-def get_shifts_all():
+def get_shifts_all(count, with_disabled ):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
+    if count == False:
+        query = """SELECT s.id FROM shifts s"""
+    else:
+        query = """SELECT s.id, s.quant FROM shifts s"""
 
-    query = """SELECT s.id FROM shifts s"""
+    if with_disabled == False:
+        query += " WHERE enabled = 1"
 
     c.execute(query)
     shifts_all = c.fetchall()
@@ -303,13 +312,14 @@ def get_shifts_all():
     db.commit()
     db.close()
 
+#print(get_shifts_all(True))
 #Запись коэффициентов на основе исторических данных - коэф-т для каждого сотрудника по каждой смене.
 #Проводить перед запуском. При инициализации админом и выборе периода ротации
 def insert_shift_rates ():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
-    shifts = get_shifts_all()
+    shifts = get_shifts_all(False, True)
     for sh in shifts:
         rates = get_shift_rates(sh[0])
         for rate in rates:
@@ -319,7 +329,13 @@ def insert_shift_rates ():
     db.commit()
     db.close()
 
-insert_shift_rates()
+#insert_shift_rates()
+
+
+
+
+
+
 
 
 def insert_choice_test(choice, tg_id):
@@ -352,6 +368,39 @@ def insert_choice_test(choice, tg_id):
 # insert_choice_test(curr, '7050450693')
 
 
+#####
+def get_winners(prt, shift, count, persons_out):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    q="""SELECT
+	c.person_id,
+	r.rate,
+	p.employment_date 
+FROM
+	"current" c
+JOIN rates r ON c.person_id = r.person_id AND c.shift_id = r.shift_id
+JOIN person p ON c.person_id = p.id 
+WHERE
+	c.priority = ?
+AND c.shift_id  = ? """
+    for key, value in persons_out.items():
+        if value == False:
+            q += """ AND c.person_id != """ + str(key)
+    q += """ ORDER BY rate DESC, employment_date
+LIMIT ?"""
+    c.execute(q, (prt, shift, count))
+    return c.fetchall()
+    db.commit()
+    db.close()
+
+
+
+#print(get_winners(0,4, 1, {1: False, 2: True, 3: True, 4: False, 5: True, 6: True, 7: False, 8: False}))
+
+
+
+
 
 #1)учесть запреты на смены.
 # 2) сделать признак админа в persons и выдавать ему отдельное меню
@@ -359,6 +408,57 @@ def insert_choice_test(choice, tg_id):
 
 
 
+def get_persons_id():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""SELECT
+	id
+FROM
+	person p
+WHERE
+	enabled = 1
+    """
+    c.execute(q)
+    persons_out = {}
+    for p in c.fetchall():
+        persons_out[p[0]]=True
+    return persons_out
+    #return c.fetchall()
+    db.commit()
+    db.close()
+
+#print(get_persons_id())
+
+
+def insert_winners(person_id, shift_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""INSERT INTO vote (person_id,shift_id) VALUES (?, ?)"""
+    c.execute(q, (person_id, shift_id))
+    db.commit()
+    db.close()
+
+def del_vote():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""DELETE FROM vote"""
+    c.execute(q)
+    db.commit()
+    db.close()
+
+#del_vote()
+
+def get_shift_out():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    shifts = get_shifts_all(True, False)
+    shifts_out = {}
+    for sh in shifts:
+        shifts_out[sh[0]]=sh[1]
+    return shifts_out
+    db.commit()
+    db.close()
+#print(get_shift_out())
 
 
 
