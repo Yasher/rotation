@@ -28,6 +28,20 @@
 				"closeIdleConnection": true,
 				"auth-model": "native"
 			}
+		},
+		"sqlite_jdbc-18f86d93dbb-5000f7cef2ab746f": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "journal_max.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/pythonProject2/journal_max.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/journal_max.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
 		}
 	},
 	"connection-types": {

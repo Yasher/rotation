@@ -80,7 +80,7 @@ def delete_userdata_from_choice(tg_id):
     #####
     global choice
     i = 0
-   while True:
+    while True:
         try:
             if str(tg_id) in choice[i]:
                 choice.remove(choice[i])
@@ -114,20 +114,24 @@ def delete_userdata_from_choice(tg_id):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    tg_id = message.from_user.id
 
-    if db.check_shifts_persons_count() == False:
-        bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+    if db.get_person_id_from_tg_id(tg_id) == 0:
+        bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
     else:
 
-        tg_id = message.from_user.id
+        if db.check_shifts_persons_count() == False:
+            bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+        else:
 
-        db.delete_user_from_current(tg_id)
-        delete_userdata_from_shifts(tg_id)
-        add_userdata_to_shifts(tg_id)
-        delete_userdata_from_choice(tg_id)
 
-        get_count(tg_id)
-        msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup = make_markup(tg_id))
+            db.delete_user_from_current(tg_id)
+            delete_userdata_from_shifts(tg_id)
+            add_userdata_to_shifts(tg_id)
+            delete_userdata_from_choice(tg_id)
+
+            get_count(tg_id)
+            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup = make_markup(tg_id))
 
 # @bot.message_handler(commands=['start']) #создаем команду
 

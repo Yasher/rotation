@@ -29,14 +29,14 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-18f86d93dbb-5000f7cef2ab746f": {
+		"sqlite_jdbc-18fa0371ff3-cb93e8b6c648145": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
-			"name": "journal_max.db",
+			"name": "journal_max1.db",
 			"save-password": true,
 			"configuration": {
-				"database": "/home/yasher/PycharmProjects/pythonProject2/journal_max.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/journal_max.db",
+				"database": "/home/yasher/Downloads/journal_max1.db",
+				"url": "jdbc:sqlite:/home/yasher/Downloads/journal_max1.db",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,
