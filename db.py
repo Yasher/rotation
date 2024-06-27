@@ -491,6 +491,31 @@ def get_shift_out():
 
 
 
+#### Получаем роль юзера (админ или нет)
+def get_user_role(person_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""SELECT
+	admin
+FROM
+	person
+WHERE
+	tg_id = ?"""
+    c.execute(q, (str(person_id),))
+    if c.fetchone()[0] == 1:
+        return True
+    else:
+        return False
+
+    db.commit()
+    db.close()
+
+#print(get_user_role(663014633))
+#663014633
+#181564144
+
+
+
 
 db.commit()
 db.close()

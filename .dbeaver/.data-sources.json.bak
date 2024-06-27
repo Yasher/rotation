@@ -15,20 +15,6 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-18f77469e03-23a29c711403de2c": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "rotation.db",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/pythonProject2/rotation.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/rotation.db",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
 		"sqlite_jdbc-18fa0371ff3-cb93e8b6c648145": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
@@ -37,6 +23,20 @@
 			"configuration": {
 				"database": "/home/yasher/Downloads/journal_max1.db",
 				"url": "jdbc:sqlite:/home/yasher/Downloads/journal_max1.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-18fa3cd00ab-6471fecb85ea55a": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/pythonProject2/rotation.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/rotation.db",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,
