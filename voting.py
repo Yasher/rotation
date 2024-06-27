@@ -4,6 +4,9 @@ import db
 
 #РАСЧЕТ rate ПЕРЕД voting
 
+db.delete_shift_rates()
+db.insert_shift_rates()
+
 #persons_out = получить словарь person:true\false - выбрана смена или нет
 persons_out = db.get_persons_id()
 #shifts_out = -\\- по сменам id:колво невыбраных чел и минусовать выбраных

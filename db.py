@@ -329,10 +329,22 @@ def insert_shift_rates ():
     db.commit()
     db.close()
 
+
+
 #insert_shift_rates()
 
 
+def delete_shift_rates():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
 
+    query = """DELETE FROM rates"""
+    c.execute(query)
+
+    db.commit()
+    db.close()
+
+#delete_shift_rates()
 
 
 
