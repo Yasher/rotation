@@ -1,5 +1,6 @@
 import datetime
 import sqlite3
+import calendar
 
 db = sqlite3.connect('rotation.db')
 c = db.cursor()
@@ -513,6 +514,80 @@ WHERE
 #print(get_user_role(663014633))
 #663014633
 #181564144
+
+
+def update_period (year, month):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    q = """DELETE FROM settings;"""
+    c.execute(q)
+
+    q = """INSERT INTO
+    settings (rotation_period)
+    VALUES (?)"""
+
+    date = year + "-" + month + "-01 00:00:00"
+    c.execute(q, (date,))
+    db.commit()
+    db.close()
+
+#update_period("2020", "01")
+
+def insert_voting_results_into_history():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q = """SELECT
+	*
+FROM
+	settings s 
+"""
+    c.execute(q)
+    period = c.fetchone()[0]
+    q = """INSERT
+	INTO
+	history (person_id,
+	shift_id,
+	period)
+SELECT
+	person_id ,
+	shift_id,
+	? period
+FROM
+	vote v"""
+    #period = '2024-12-01 00:00:00'
+    c.execute(q, (period,))
+
+    #year = period[0:4]
+    #month = period[5:7]
+    period = datetime.datetime.strptime(period, "%Y-%m-%d %H:%M:%S")
+    days_in_month = calendar.monthrange(period.year, period.month)[1]
+    period += datetime.timedelta(days=days_in_month)
+
+    c.execute(q, (period,))
+    db.commit()
+    db.close()
+def check_current_vote_in_history():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q = """SELECT COUNT(1)  FROM history h WHERE period = (SELECT * FROM settings s LIMIT 1)"""
+    c.execute(q)
+    #print(str(c.fetchone()[0]))
+    if c.fetchone()[0] == 0:
+        return False
+    else:
+        return True
+    db.commit()
+    db.close()
+#print(check_current_vote_in_history())
+#insert_voting_results_into_history()
+
+
+
+
+#===
+
+
 
 
 
