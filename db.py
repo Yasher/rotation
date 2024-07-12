@@ -582,7 +582,23 @@ def check_current_vote_in_history():
 #print(check_current_vote_in_history())
 #insert_voting_results_into_history()
 
+def get_current_period():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""SELECT
+	*
+FROM
+	settings s
+"""
+    c.execute(q)
+    period = c.fetchone()[0]
+    period = datetime.datetime.strptime(period, "%Y-%m-%d %H:%M:%S")
+    period_text = str(period.month) + "." + str(period.year)
+    return period_text
+    db.commit()
+    db.close()
 
+#get_current_period()
 
 
 #===

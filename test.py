@@ -14,6 +14,7 @@ import voting
 bot = telebot.TeleBot(config.config['token'])
 
 
+n=1
 
 
 #@bot.message_handler(commands=['start', 'help'])
@@ -22,11 +23,17 @@ bot = telebot.TeleBot(config.config['token'])
 #def send_welcome(message):
 #	bot.reply_to(message, "Howdy, how are you doing?")
 def start(message):
+    print(message.text)
     tg_id = message.from_user.id
     if db.get_user_role(tg_id) == True:
         rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width = 3)
         rkm.add(types.KeyboardButton("Период"), types.KeyboardButton("Выборы"), types.KeyboardButton("Запись \n результатов"), types.KeyboardButton("Подмена"))
-        msg = bot.send_message(message.chat.id, "Вы администратор", reply_markup=rkm)
+        # global n
+        # if n==1:
+        #     n=0
+        msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
+        msg = bot.send_message(message.chat.id, "Вы администратор")
+        #a=1
         bot.register_next_step_handler(msg, user_handler)
 
     else:
@@ -36,8 +43,13 @@ def start(message):
     #bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Данные записаны!!!")
 def user_handler (message):
     if (message.text == "Период"):
-        msg = bot.send_message(message.chat.id, "Введите год")
-        bot.register_next_step_handler(msg, year_input)
+        period_text = db.get_current_period()
+        msg = bot.send_message(message.chat.id, "Текущий период: " + period_text)
+        markup1 = types.InlineKeyboardMarkup()
+        markup1.add(types.InlineKeyboardButton("Да", callback_data="yes"))
+        markup1.add(types.InlineKeyboardButton("Нет", callback_data= "no"))
+        msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup1)
+
     if (message.text == "Выборы"):
         ### Проверка пуста ли таблица vote, если не пуста, то сообщить (спросить перезаписать)
         voting.voting()
@@ -53,17 +65,28 @@ def user_handler (message):
             bot.register_next_step_handler(msg, user_handler)
     if (message.text == "Подмена"):
         print("Подмена")
+@bot.callback_query_handler(func=lambda call: True)
+def callback_worker(call):
+    if call.data == "yes":
+        print("yes")
+        msg = bot.send_message(call.message.chat.id, "Введите год XXXX")
+        bot.register_next_step_handler(msg, year_input)
+    else:
+        print("no")
+
 
 def year_input(message):
     global year
     year = message.text
-    msg = bot.send_message(message.chat.id, "Введите месяц")
+    msg = bot.send_message(message.chat.id, "Введите месяц XX")
     bot.register_next_step_handler(msg, month_input)
 
 def month_input (message):
     global month
     month = message.text
     db.update_period(year, month)
+    bot.register_next_step_handler(message, user_handler)
+
 
 
 
