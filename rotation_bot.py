@@ -120,18 +120,17 @@ def start(message):
         bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
     else:
 
-        if db.check_shifts_persons_count() == False:
-            bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
-        else:
+        # if db.check_shifts_persons_count() == False:
+        #     bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+        # else:
 
+        db.delete_user_from_current(tg_id)
+        delete_userdata_from_shifts(tg_id)
+        add_userdata_to_shifts(tg_id)
+        delete_userdata_from_choice(tg_id)
 
-            db.delete_user_from_current(tg_id)
-            delete_userdata_from_shifts(tg_id)
-            add_userdata_to_shifts(tg_id)
-            delete_userdata_from_choice(tg_id)
-
-            get_count(tg_id)
-            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup = make_markup(tg_id))
+        get_count(tg_id)
+        msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=make_markup(tg_id))
 
 # @bot.message_handler(commands=['start']) #создаем команду
 

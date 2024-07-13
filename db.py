@@ -493,7 +493,7 @@ def get_shift_out():
 
 
 #### Получаем роль юзера (админ или нет)
-def get_user_role(person_id):
+def is_user_admin(person_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
@@ -582,7 +582,7 @@ def check_current_vote_in_history():
 #print(check_current_vote_in_history())
 #insert_voting_results_into_history()
 
-def get_current_period():
+def get_current_period(arg):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
@@ -592,18 +592,83 @@ FROM
 """
     c.execute(q)
     period = c.fetchone()[0]
-    period = datetime.datetime.strptime(period, "%Y-%m-%d %H:%M:%S")
-    period_text = str(period.month) + "." + str(period.year)
+    period_base = period
+    period1 = datetime.datetime.strptime(period, "%Y-%m-%d %H:%M:%S")
+    days_in_month = calendar.monthrange(period1.year, period1.month)[1]
+    period2 = period1 + datetime.timedelta(days=days_in_month)
+    if period1.month < 10:
+        month1 = "0" + str(period1.month)
+    else:
+        month1 = str(period1.month)
+    if period2.month < 10:
+        month2 = "0" + str(period2.month)
+    else:
+        month2 = str(period2.month)
+
+    if str(arg) == "normal":
+        period_text = month1 + "." + str(period1.year)
+    if str(arg) == "curr_period":
+        period_text = str(period1.year) + "-" + month1
+    if str(arg) == "curr_period+1":
+
+        period_text = str(period2.year) + "-" + month2
+
     return period_text
     db.commit()
     db.close()
 
-#get_current_period()
+#print(get_current_period("normal"))
 
+def check_table_is_empty(table):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q = """SELECT COUNT(1)  FROM """ + str(table)
+    c.execute(q)
+    if c.fetchone()[0] == 0:
+        return True
+    else:
+        return False
+    db.commit()
+    db.close()
+
+#print(check_table_is_empty("vote"))
+
+def del_results_from_history():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    period = str(get_current_period("curr_period"))
+    q = """DELETE
+FROM
+	history
+WHERE
+	period LIKE '""" + period + "%'"
+
+    c.execute(q)
+
+    period = str(get_current_period("curr_period+1"))
+    q = """DELETE
+    FROM
+    	history
+    WHERE
+    	period LIKE '""" + period + "%'"
+
+    c.execute(q)
+
+
+    db.commit()
+    db.close()
+
+#del_results_from_history()
 
 #===
 
+def close_base_conn():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    db.commit()
+    db.close()
 
+#close_base_conn()
 
 
 
