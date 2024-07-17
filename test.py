@@ -14,34 +14,34 @@ import voting
 bot = telebot.TeleBot(config.config['token'])
 
 
-n=1
+
+hello = 0
 
 
 #@bot.message_handler(commands=['start', 'help'])
 
 @bot.message_handler(commands=['start']) #создаем команду
-#def send_welcome(message):
-#	bot.reply_to(message, "Howdy, how are you doing?")
 def start(message):
-    print(message.text)
+    msg = message
     tg_id = message.from_user.id
+    rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
     if db.is_user_admin(tg_id) == True:
-        rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width = 3)
-        rkm.add(types.KeyboardButton("Период"), types.KeyboardButton("Выборы"), types.KeyboardButton("Запись \n результатов"), types.KeyboardButton("Подмена"))
-        # global n
-        # if n==1:
-        #     n=0
-        msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
-        msg = bot.send_message(message.chat.id, "Вы администратор")
+        rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Выборы"), types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"))
+
+        global hello
+        if hello == 0:
+            msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
+            msg = bot.send_message(message.chat.id, "Вы администратор")
+            hello = 1
         #a=1
         bot.register_next_step_handler(msg, user_handler)
 
     else:
-        bot.send_message(chat_id=message.chat.id, text=";fkdjgksdfgl;k")
+        rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"))
+        msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
 
-    #msg = bot.send_message(message.chat.id, "Запись данных...")
-    #bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Данные записаны!!!")
 def user_handler (message):
+    msg = message
     if (message.text == "Период"):
         period_text = db.get_current_period("normal")
         msg = bot.send_message(message.chat.id, "Текущий период: " + period_text)
@@ -50,7 +50,7 @@ def user_handler (message):
         #markup.add(types.InlineKeyboardButton("Нет", callback_data= "no_period"))
         msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup)
 
-    if (message.text == "Выборы"):
+    elif (message.text == "Выборы"):
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
         else:
@@ -64,19 +64,21 @@ def user_handler (message):
                 markup = make_inline_markup("vote")
                 msg = bot.send_message(message.chat.id, "Обновить?", reply_markup=markup)
 
-    if (message.text == "Запись \n результатов"):
+    elif (message.text == "Запись результатов"):
         ###Проверка есть ли в history уже данные этой ротации
         if db.check_current_vote_in_history() == False:
             db.insert_voting_results_into_history()
-            msg = bot.send_message(message.chat.id, "Данные записаны!")
-            bot.register_next_step_handler(msg, user_handler)
+            msg = bot.send_message(message.chat.id, "Данные записаны!!")
+            #bot.register_next_step_handler(msg, user_handler)
         else:
             markup = make_inline_markup("results")
             msg = bot.send_message(message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)   #### Сделаьб вопрос перезаписать или нет
-            bot.register_next_step_handler(msg, user_handler)
-    if (message.text == "Подмена"):
+            #bot.register_next_step_handler(msg, user_handler)
+    elif (message.text == "Подмена"):
         print("Подмена")
+        msg = bot.send_message(message.chat.id, "Подмена")
         bot.register_next_step_handler(msg, user_handler)
+    bot.register_next_step_handler(msg, start)
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     if call.data == "yes_period":
@@ -95,16 +97,15 @@ def callback_worker(call):
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
         bot.register_next_step_handler(msg, user_handler)
     elif call.data == "del_results":
-        print("удаляем")
         db.del_results_from_history()
-    elif call.data == "update_results":
-        print("перезаптсываем")
-
-         ### доделать
-        yyy
-
-
-
+        msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
+        bot.register_next_step_handler(msg, user_handler)
+    # elif call.data == "update_results":
+    #     print("перезаптсываем")
+    #     db.del_results_from_history()
+    #     db.insert_voting_results_into_history()
+    #     msg = bot.send_message(call.message.chat.id, "Данные записаны!")
+    #     bot.register_next_step_handler(msg, user_handler)
 
 def year_input(message):
     global year
@@ -127,7 +128,7 @@ def make_inline_markup(part):
         markup.add(types.InlineKeyboardButton("Нет", callback_data= "no_" + str(part)))
     elif part == "results":
         markup.add(types.InlineKeyboardButton("Удалить", callback_data="del_" + str(part)))
-        markup.add(types.InlineKeyboardButton("Перезаписать", callback_data= "update_" + str(part)))
+        # markup.add(types.InlineKeyboardButton("Перезаписать", callback_data= "update_" + str(part)))
     return markup
 
 
