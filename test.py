@@ -35,7 +35,7 @@ def start(message):
             hello = 1
         #a=1
         bot.register_next_step_handler(msg, user_handler)
-
+        #user_handler(msg)
     else:
         rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"))
         msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
@@ -58,7 +58,8 @@ def user_handler (message):
             if db.check_table_is_empty("vote") == True:
                 voting.voting()
                 msg = bot.send_message(message.chat.id, "Выборы проведены!")
-                bot.register_next_step_handler(msg, user_handler)
+                #bot.register_next_step_handler(msg, user_handler)
+                user_handler(msg)
             else:
                 msg = bot.send_message(message.chat.id, "Таблица выборов не пуста.")
                 markup = make_inline_markup("vote")
@@ -95,7 +96,7 @@ def callback_worker(call):
         bot.register_next_step_handler(msg, user_handler)
     elif call.data == "no_vote":
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
-        bot.register_next_step_handler(msg, user_handler)
+        #bot.register_next_step_handler(msg, user_handler)
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")

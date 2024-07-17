@@ -10,7 +10,6 @@ def get_shifts (tg_id=0):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     if tg_id != 0:
-        #print(tg_id)
         query = """SELECT s.id, s.fullname, p.tg_id 
     from shifts s
     JOIN
@@ -44,7 +43,6 @@ def get_shifts (tg_id=0):
     # query = "SELECT id, fullname  FROM shifts s WHERE enabled = 1"
         c.execute(query)
     shifts = c.fetchall()
-    #print(shifts)
     return shifts
     db.commit()
     db.close()
@@ -59,7 +57,6 @@ def get_person_id_from_tg_id(tg_id):
     c = db.cursor()
 
     query = "SELECT id FROM person p WHERE tg_id = ?"
-    print (query)
     c.execute(query, (str(tg_id), ))
     id = c.fetchall()
     if len(id) > 0:
@@ -70,14 +67,11 @@ def get_person_id_from_tg_id(tg_id):
     db.commit()
     db.close()
 
-#print(get_person_id_from_tg_id("7050450693"))
-
 def insert_choice(choice, tg_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
     person_id = get_person_id_from_tg_id(tg_id)
-    print(person_id)
     count = 0
     for i in choice:
         if i[1] == str(tg_id):
@@ -91,7 +85,6 @@ def insert_choice(choice, tg_id):
         # {str(person_id)}
         # ', "+str(i)+", "+str(choice.index(i))+")"""
 
-        # print(query)
             c.execute(query, (str(person_id), str(i[0]), count))
             count += 1
     db.commit()
@@ -152,8 +145,6 @@ WHERE
 
     c.execute(query)
     shifts = c.fetchone()[0]
-    print(shifts)
-
     query = """SELECT
 	sum(p.enabled)
 FROM
@@ -163,8 +154,6 @@ WHERE
 
     c.execute(query)
     persons = c.fetchone()[0]
-    print(persons)
-
     if shifts != persons:
         return False
     else:
@@ -178,8 +167,6 @@ def random_insert_current():
 
     import random
     a=random.sample(range(5), 5)
-    print (a)
-
     query = """INSERT INTO current (person_id, shift_id, priority, datetime) VALUES (?, ?, ?, datetime('now'))
     """
     p=1
@@ -188,7 +175,6 @@ def random_insert_current():
         n = 1
         a = random.sample(range(5), 5)
         for i in a:
-            print(p, n, i)
             c.execute(query, (p, n, i))
             n += 1
         p += 1
@@ -219,9 +205,6 @@ WHERE
     db.commit()
     db.close()
 
-
-#print(get_voting_table(0))
-
 def get_person_count():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
@@ -249,8 +232,6 @@ def get_shift_rates (shift):
     query = """SELECT rotation_period FROM settings"""
     c.execute(query)
     rotation_period = datetime.datetime.strptime(c.fetchone()[0], "%Y-%m-%d %H:%M:%S")
-    print(rotation_period)
-
     p_count = get_person_count()
     rates = []
     for i in range(p_count):
@@ -279,17 +260,7 @@ LIMIT 1
     return rates
     db.commit()
     db.close()
-#
-#a = get_shift_rates(3)
-#print(a)
-# now = datetime.datetime.now()
-# print(now)
-#
-# print(a[0][1][0])
-# date = datetime.datetime.strptime(a[0][1][0], "%Y-%m-%d %H:%M:%S")
-# print(date)
-# notinshift = (now - date).days
-# print(notinshift)
+
 
 ### записать всем ratio = (rotation_period - last_period) в месяцах, а тому у кого None ratio = 1000
 
@@ -313,7 +284,6 @@ def get_shifts_all(count, with_disabled ):
     db.commit()
     db.close()
 
-#print(get_shifts_all(True))
 #Запись коэффициентов на основе исторических данных - коэф-т для каждого сотрудника по каждой смене.
 #Проводить перед запуском. При инициализации админом и выборе периода ротации
 def insert_shift_rates ():
@@ -356,7 +326,6 @@ def insert_choice_test(choice, tg_id):
     c = db.cursor()
 
     person_id = get_person_id_from_tg_id(tg_id)
-    print(person_id)
     count = 0
     for i in choice:
         if i[2] == str(tg_id):
@@ -366,20 +335,10 @@ def insert_choice_test(choice, tg_id):
                         shift_id,
                         priority, datetime)
                     VALUES (?, ?, ?, "sdf")"""
-        # query = f'"""INSERT INTO current (person_id, shift_id, priority) VALUES ('
-        # {str(person_id)}
-        # ', "+str(i)+", "+str(choice.index(i))+")"""
-
-        # print(query)
             c.execute(query, (str(person_id), str(i[0]), count))
             count += 1
     db.commit()
     db.close()
-#
-# curr = [(1, '08:30 - 20:30', '7050450693'), (2, '20:30 - 08:30', '7050450693'), (3, '14:00 - 02:00', '7050450693'), (4, '15:30 - 00:00', '7050450693'), (5, '17:00 - 01:30', '7050450693')]
-#
-# insert_choice_test(curr, '7050450693')
-
 
 #####
 def get_winners(prt, shift, count, persons_out):
@@ -406,10 +365,6 @@ LIMIT ?"""
     return c.fetchall()
     db.commit()
     db.close()
-
-
-
-#print(get_winners(0,4, 1, {1: False, 2: True, 3: True, 4: False, 5: True, 6: True, 7: False, 8: False}))
 
 
 
@@ -440,9 +395,6 @@ WHERE
     db.commit()
     db.close()
 
-#print(get_persons_id())
-
-
 def insert_winners(person_id, shift_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
@@ -471,8 +423,6 @@ def get_shift_out():
     return shifts_out
     db.commit()
     db.close()
-#print(get_shift_out())
-
 
 
 # q="INSERT INTO current (id, person_id, shift_id, prioritry) VALUES ('1', '2', '4', '0')"
@@ -510,10 +460,6 @@ WHERE
 
     db.commit()
     db.close()
-
-#print(get_user_role(663014633))
-#663014633
-#181564144
 
 
 def update_period (year, month):
@@ -572,15 +518,12 @@ def check_current_vote_in_history():
     c = db.cursor()
     q = """SELECT COUNT(1)  FROM history h WHERE period = (SELECT * FROM settings s LIMIT 1)"""
     c.execute(q)
-    #print(str(c.fetchone()[0]))
     if c.fetchone()[0] == 0:
         return False
     else:
         return True
     db.commit()
     db.close()
-#print(check_current_vote_in_history())
-#insert_voting_results_into_history()
 
 def get_current_period(arg):
     db = sqlite3.connect('rotation.db')
@@ -617,8 +560,6 @@ FROM
     db.commit()
     db.close()
 
-#print(get_current_period("normal"))
-
 def check_table_is_empty(table):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
@@ -631,7 +572,6 @@ def check_table_is_empty(table):
     db.commit()
     db.close()
 
-#print(check_table_is_empty("vote"))
 
 def del_results_from_history():
     db = sqlite3.connect('rotation.db')
@@ -679,13 +619,4 @@ db.close()
 
 
 
-### функц очистка таблицы current
 
-
-
-#a = get_shifts()
-#print (a[0])
-
-
-#for i in a:
- #   print (i)
