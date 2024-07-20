@@ -341,7 +341,7 @@ def insert_choice_test(choice, tg_id):
     db.close()
 
 #####
-def get_winners(prt, shift, count, persons_out):
+def get_winners(prt, shift, count, persons_out, nominees):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
@@ -359,9 +359,12 @@ AND c.shift_id  = ? """
     for key, value in persons_out.items():
         if value == False:
             q += """ AND c.person_id != """ + str(key)
-    q += """ ORDER BY rate DESC, employment_date
-LIMIT ?"""
-    c.execute(q, (prt, shift, count))
+    q += """ ORDER BY rate DESC, employment_date """
+    if nominees == False:
+        q += """LIMIT ?"""
+        c.execute(q, (prt, shift, count))
+    else:
+        c.execute(q, (prt, shift))
     return c.fetchall()
     db.commit()
     db.close()

@@ -12,26 +12,31 @@ def voting():
     #shifts_out = -\\- по сменам id:колво невыбраных чел и минусовать выбраных
     shifts_out = db.get_shift_out()
 
-    db.del_vote()
-    shifts = db.get_shifts_all(True, False)
+    db.del_vote() #очищаем таблицу vote
+    shifts = db.get_shifts_all(True, False) #список смен
     print (shifts)
-    count_shifts_prts = len (shifts)
+    count_shifts_prts = len (shifts) #количество смен = количество кругов розыгрыша
     print (count_shifts_prts)
-    for round in range(count_shifts_prts):
+    for round in range(count_shifts_prts):  #проход по кругам
         print("круг " + str(round))
     #count_shifts_prts - количество приоритетов = количество разных смен
-        for shift in shifts:
+        for shift in shifts: #проход по сменам
             #проверяем сколько у смены вакантных мест
-            print(shifts_out)
-            if shifts_out[shift[0]] != 0:
-                count = shift[1]
+            #print(shifts_out)
+            if shifts_out[shift[0]] != 0: #проверяем наличие текущей смены в out-списке (смена занята)
+                count = shift[1] #количество экземпляров смены (парная, непарная)
                 print("смена " + str(shift[0]))
-                winners = db.get_winners(round, shift[0], count, persons_out)
-                print(winners)
-                for winner in winners:
-                    db.insert_winners(winner[0], shift[0])
-                    shifts_out[shift[0]] -= 1
-                    persons_out[winner[0]]=False
+
+                nominees=db.get_winners(round, shift[0], count, persons_out, True)
+                print("Смену выбрали: " + str(nominees))
+
+                winners = db.get_winners(round, shift[0], count, persons_out, False) #получаем список тех кто хочет данную смену. Ограничение длины списка = count
+                print("Победители: " + str(winners))
+                for winner in winners: #перебираем победителей данной смены
+                    db.insert_winners(winner[0], shift[0]) #пишем хотящих в базу в таблицу vote
+                    shifts_out[shift[0]] -= 1 #-1 к количеству экземпляров данной смены
+                    persons_out[winner[0]]=False #победитель дальше не участвует
+                print("Persons_out: ")
                 print(persons_out)
             else:
                 print(f"Смена {shift[0]} уже занята!")

@@ -77,9 +77,10 @@ def user_handler (message):
             #bot.register_next_step_handler(msg, user_handler)
     elif (message.text == "Подмена"):
         print("Подмена")
-        msg = bot.send_message(message.chat.id, "Подмена")
-        bot.register_next_step_handler(msg, user_handler)
-    bot.register_next_step_handler(msg, start)
+        msg = bot.send_message(message.chat.id, "Эта кнопка пока не работает 🤷‍♂️ ")
+        #bot.register_next_step_handler(msg, user_handler)
+
+    bot.register_next_step_handler(msg, user_handler)
 @bot.callback_query_handler(func=lambda call: True)
 def callback_worker(call):
     if call.data == "yes_period":
@@ -89,18 +90,18 @@ def callback_worker(call):
     elif call.data == "no_period":
         print("no_period")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
-        bot.register_next_step_handler(msg, user_handler)
+        #bot.register_next_step_handler(msg, user_handler)
     elif call.data == "yes_vote":
         voting.voting()
         msg = bot.send_message(call.message.chat.id, "Выборы проведены!")
-        bot.register_next_step_handler(msg, user_handler)
+        #bot.register_next_step_handler(msg, user_handler)
     elif call.data == "no_vote":
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
         #bot.register_next_step_handler(msg, user_handler)
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
-        bot.register_next_step_handler(msg, user_handler)
+        #bot.register_next_step_handler(msg, user_handler)
     # elif call.data == "update_results":
     #     print("перезаптсываем")
     #     db.del_results_from_history()
@@ -119,7 +120,7 @@ def month_input (message):
     month = message.text
     db.update_period(year, month)
     msg = bot.send_message(message.chat.id, "Новый период: " + str(month) + "." + str(year))
-    bot.register_next_step_handler(message, user_handler)
+    #bot.register_next_step_handler(message, user_handler)
 
 
 def make_inline_markup(part):
