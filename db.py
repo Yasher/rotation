@@ -186,26 +186,30 @@ def random_insert_current():
 
 #random_insert_current()
 
-def get_voting_table(priority):
+def get_voting_table():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
     query = """SELECT
-	person_id ,
-	shift_id ,
-	priority
+	p.fio,
+	s.fullname
 FROM
-	"current" c
-WHERE
-	priority = ?
+	vote v
+JOIN person p ON
+	v.person_id = p.id
+JOIN shifts s ON
+	v.shift_id = s.id
+ORDER BY
+	s.id
     """
-    c.execute(query, (priority, ))
+    c.execute(query)
     return c.fetchall()
 
     db.commit()
     db.close()
 
-def get_person_count():
+#t = get_voting_table()
+def get_person_count(entered):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
@@ -214,7 +218,9 @@ def get_person_count():
     FROM
     	person p
     WHERE
-    	enabled = 1"""
+    	enabled = 1 """
+    if entered == True:
+        query += "AND entered_data = 1"
 
     c.execute(query)
     return c.fetchone()[0]
@@ -232,7 +238,7 @@ def get_shift_rates (shift):
     query = """SELECT rotation_period FROM settings"""
     c.execute(query)
     rotation_period = datetime.datetime.strptime(c.fetchone()[0], "%Y-%m-%d %H:%M:%S")
-    p_count = get_person_count()
+    p_count = get_person_count(False)
     rates = []
     for i in range(p_count):
         query = """SELECT
@@ -464,6 +470,95 @@ WHERE
     db.commit()
     db.close()
 
+def get_admin_tg_id():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""SELECT
+	tg_id
+FROM
+	person
+WHERE
+	admin = 1"""
+    c.execute(q)
+    admin_tg_id = c.fetchone()
+
+    return admin_tg_id[0]
+
+    db.commit()
+    db.close()
+
+def get_users_entered_data(entered):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q = """SELECT
+	fio,
+	tg_id
+FROM
+	person p
+WHERE enabled = 1 AND """
+    if entered == True:
+        q += "entered_data = 1"
+    else:
+        q += "entered_data = 0"
+
+    c.execute(q)
+    list_entered = c.fetchall()
+
+    return list_entered
+
+    db.commit()
+    db.close()
+
+#t = heck_all_entered_data(True)
+
+#t = get_admin_tg_id()
+def check_settings_admin_msg():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""SELECT admin_received_final_msg  FROM settings s """
+
+    c.execute(q)
+    if c.fetchone()[0] == 1:
+        return True
+    else:
+        return False
+
+    db.commit()
+    db.close()
+
+def set_admin_msg(bool):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""UPDATE settings SET admin_received_final_msg = """
+    if bool:
+        q += "1"
+    else:
+        q += "0"
+
+    c.execute(q)
+
+    db.commit()
+    db.close()
+
+#set_admin_msg()
+
+#t = check_settings_admin_msg()
+def enter_data_by_user(tg_ig_current):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q="""update
+	person
+SET
+	entered_data = 1
+WHERE
+	tg_id = ?"""
+
+    c.execute(q, (tg_ig_current, ))
+
+    db.commit()
+    db.close()
+
+#enter_data_by_user("")
 
 def update_period (year, month):
     db = sqlite3.connect('rotation.db')
@@ -481,13 +576,26 @@ def update_period (year, month):
     db.commit()
     db.close()
 
+def clear_entered_data_in_person():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    q = """update
+	person
+SET
+	entered_data = 0"""
+
+    c.execute(q)
+    db.commit()
+    db.close()
+
 #update_period("2020", "01")
 
 def insert_voting_results_into_history():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q = """SELECT
-	*
+	s.rotation_period
 FROM
 	settings s 
 """
@@ -519,7 +627,7 @@ FROM
 def check_current_vote_in_history():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
-    q = """SELECT COUNT(1)  FROM history h WHERE period = (SELECT * FROM settings s LIMIT 1)"""
+    q = """SELECT COUNT(1)  FROM history h WHERE period = (SELECT s.rotation_period FROM settings s LIMIT 1)"""
     c.execute(q)
     if c.fetchone()[0] == 0:
         return False
@@ -532,7 +640,7 @@ def get_current_period(arg):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
-	*
+	s.rotation_period
 FROM
 	settings s
 """

@@ -15,7 +15,7 @@ import db
 import config
 import voting
 
-bot = telebot.TeleBot(config.config['token'])
+bot = telebot.TeleBot(config.config['token'], parse_mode='HTML')
 
 shifts = db.get_shifts() # получаем список кортежей [(id_смены, имя_смены, tg_id), (x,x,x) (y,y,y)]
 
@@ -78,19 +78,19 @@ def start(message):
 
         rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
         if db.is_user_admin(tg_id) == True:
-            rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Выборы"),
-                    types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"))
+            rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Результат"),
+                    types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"), types.KeyboardButton("Я прожался"))
 
             global hello
             if hello == 0:
-                msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
+                msg = bot.send_message(message.chat.id, "Привет!", reply_markup=rkm)
                 msg = bot.send_message(message.chat.id, "Вы администратор")
                 hello = 1
             # a=1
             bot.register_next_step_handler(msg, user_handler)
             # user_handler(msg)
         else:
-            rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"))
+            rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"), types.KeyboardButton("Я прожался"))
             msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
             bot.register_next_step_handler(msg, user_handler)
 
@@ -139,14 +139,102 @@ def user_handler (message):
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
         else:
-            db.delete_user_from_current(tg_id)
-            delete_userdata_from_shifts(tg_id)
-            add_userdata_to_shifts(tg_id)
-            delete_userdata_from_choice(tg_id)
-            get_count(tg_id)
-            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=make_markup(tg_id))
+            #global tg_id
+            db.delete_user_from_current(message.from_user.id)
+            delete_userdata_from_shifts(message.from_user.id)
+            add_userdata_to_shifts(message.from_user.id)
+            delete_userdata_from_choice(message.from_user.id)
+            get_count(message.from_user.id)
+            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=make_markup(message.from_user.id))
+    elif (message.text == "Результат"):
+        if db.check_shifts_persons_count() == False:
+            bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+        else:
+            voting.voting()
 
+            #msgtext = ""
+
+
+            # list_entered = db.get_users_entered_data(True)
+
+
+            # result = db.get_voting_table()
+            # for l in result:
+            #     msgtext += l[0] + "\t\t\t\t\t\t" + l[1] + "\n"
+            #
+            # num = db.get_person_count(True)
+            # num_p = db.get_person_count(False)
+            # if num_p == num:
+            #     msgtext = "<b>ИТОГОВЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
+            #     if db.check_settings_admin_msg() == False:
+            #         bot.send_message(db.get_admin_tg_id(), msgtext)
+            # else:
+            #     msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
+            msgtext = make_msgtext_results()
+            bot.send_message(message.chat.id, msgtext)
+
+        #bot.send_message(db.get_admin_tg_id(), "Привет от бота")
+
+    elif (message.text == "Я прожался"):
+        tg_id = msg.from_user.id
+        db.enter_data_by_user(tg_id)
+        bot.send_message(message.chat.id, "Молодец!")
+        if all_entered_data():
+            if db.check_settings_admin_msg() == False:
+                bot.send_message(db.get_admin_tg_id(), make_msgtext_results())
+                db.set_admin_msg(True)
+
+
+        if db.is_user_admin(tg_id) == True:
+            list_entered_print = ""
+            list_not_entered_print = ""
+            messagetext = ""
+            num = 0
+            list_entered = db.get_users_entered_data(True)
+            for person in list_entered:
+                list_entered_print += person[0] + "\n"
+                num += 1
+            list_not_entered = db.get_users_entered_data(False)
+            for person in list_not_entered:
+                list_not_entered_print += person[0] + "\n"
+            num_p = db.get_person_count(False)
+            if  num_p == num:
+                notif = "Прожаты ВСЕ: \n"
+                messagetext = notif + list_entered_print
+            else:
+                notif = "Прожаты НЕ все: \n"
+                messagetext = notif + list_entered_print + "\n\n Остались: \n" + list_not_entered_print
+
+
+
+            bot.send_message(message.chat.id, messagetext)
     bot.register_next_step_handler(msg, user_handler)
+
+
+
+def make_msgtext_results():
+    msgtext = ""
+    result = db.get_voting_table()
+    for l in result:
+        msgtext += l[0] + "\t\t\t\t\t\t" + l[1] + "\n"
+
+    #num = db.get_person_count(True)
+    #num_p = db.get_person_count(False)
+    if all_entered_data():
+        msgtext = "<b>ИТОГОВЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
+
+    else:
+        msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
+
+    return msgtext
+
+def all_entered_data():
+    num = db.get_person_count(True)
+    num_p = db.get_person_count(False)
+    if num_p == num:
+        return True
+    else:
+        return False
 
 def make_inline_markup_ifnotshifts(part):
     markup = types.InlineKeyboardMarkup()
@@ -169,7 +257,8 @@ def month_input (message):
     month = message.text
     db.update_period(year, month)
     msg = bot.send_message(message.chat.id, "Новый период: " + str(month) + "." + str(year))
-
+    db.clear_entered_data_in_person()
+    db.set_admin_msg(False)
 
 
 
@@ -208,6 +297,7 @@ def callback_worker(call):
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
+
     else:
 
 
@@ -244,6 +334,7 @@ def callback_worker(call):
                             n_ch += 1
                         msg5 = bot.send_message(chat_id=call.message.chat.id, text=message_chosen)
                         # global choice
+                        #msg6 = bot.send_message(chat_id=call.message.chat.id, text="Это ваш окончательный выбор?", reply_markup=make_inline_markup_ifnotshifts("final_choice"))
 
                 else:
                     i += 1

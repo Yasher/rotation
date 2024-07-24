@@ -42,6 +42,20 @@
 				"closeIdleConnection": true,
 				"auth-model": "native"
 			}
+		},
+		"sqlite_jdbc-190e233e732-5930017bad6ce240": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation_06_orig.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/pythonProject2/rotation_06_orig.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/rotation_06_orig.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
 		}
 	},
 	"connection-types": {
