@@ -239,8 +239,10 @@ def get_shift_rates (shift):
     c.execute(query)
     rotation_period = datetime.datetime.strptime(c.fetchone()[0], "%Y-%m-%d %H:%M:%S")
     p_count = get_person_count(False)
+    persons = get_persons_id()
     rates = []
-    for i in range(p_count):
+    #for i in range(p_count):
+    for i in persons.keys():
         query = """SELECT
 	period 
 from
@@ -254,7 +256,7 @@ LIMIT 1
 """
 #Здесь можно будет поставить ограничение по давности проверки
 
-        c.execute(query, (shift, i+1))
+        c.execute(query, (shift, i))
         last_period = c.fetchone()
         if last_period != None:
             last_period_date = datetime.datetime.strptime(last_period[0], "%Y-%m-%d %H:%M:%S")
@@ -262,7 +264,7 @@ LIMIT 1
         else:
             last_period_date = None
             leftdays = 100000
-        rates.append([i+1, leftdays])
+        rates.append([i, leftdays])
     return rates
     db.commit()
     db.close()
@@ -371,7 +373,8 @@ AND c.shift_id  = ? """
         c.execute(q, (prt, shift, count))
     else:
         c.execute(q, (prt, shift))
-    return c.fetchall()
+    res = c.fetchall()
+    return res
     db.commit()
     db.close()
 

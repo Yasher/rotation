@@ -30,7 +30,7 @@ def voting():
                 nominees=db.get_winners(round, shift[0], count, persons_out, True)
                 print("Смену выбрали: " + str(nominees))
 
-                winners = db.get_winners(round, shift[0], count, persons_out, False) #получаем список тех кто хочет данную смену. Ограничение длины списка = count
+                winners = db.get_winners(round, shift[0], shifts_out[shift[0]], persons_out, False) #получаем список тех кто хочет данную смену. Ограничение длины списка = count
                 print("Победители: " + str(winners))
                 for winner in winners: #перебираем победителей данной смены
                     db.insert_winners(winner[0], shift[0]) #пишем хотящих в базу в таблицу vote
