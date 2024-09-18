@@ -42,6 +42,20 @@
 				"closeIdleConnection": true,
 				"auth-model": "native"
 			}
+		},
+		"sqlite_jdbc-190e9f2a894-32625ba55f30e78c": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation202407252050.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/backup/rotation202407252050.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation202407252050.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
 		}
 	},
 	"connection-types": {

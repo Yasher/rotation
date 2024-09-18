@@ -91,7 +91,7 @@ def start(message):
             # user_handler(msg)
         else:
             rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"), types.KeyboardButton("Я прожался"))
-            msg = bot.send_message(message.chat.id, "Привет " + str(tg_id), reply_markup=rkm)
+            msg = bot.send_message(message.chat.id, "Привет " + db.get_person_fio_from_tg_id(tg_id)[0], reply_markup=rkm)
             bot.register_next_step_handler(msg, user_handler)
 
 

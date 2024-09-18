@@ -10,22 +10,20 @@ def get_shifts (tg_id=0):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     if tg_id != 0:
-        query = """SELECT s.id, s.fullname, p.tg_id 
-    from shifts s
-    JOIN
-    person
-    p
-    ON
-    1 = 1
-    WHERE
-    s.enabled = 1
-    AND
-    p.enabled = 1
-    AND
-    p.tg_id = ?
-    ORDER BY s.id"""
-        c.execute(query, (str(tg_id), ))
-    else:
+    #     query = """SELECT s.id, s.fullname, p.tg_id
+    # from shifts s
+    # JOIN
+    # person
+    # p
+    # ON
+    # 1 = 1
+    # WHERE
+    # s.enabled = 1
+    # AND
+    # p.enabled = 1
+    # AND
+    # p.tg_id = ?
+    # ORDER BY s.id"""
 
         query = """SELECT s.id, s.fullname, p.tg_id 
     from shifts s
@@ -34,10 +32,55 @@ def get_shifts (tg_id=0):
     p
     ON
     1 = 1
+     LEFT JOIN prohibited p2 
+    ON
+    p.id = p2.person_id AND
+    s.id = p2.shift_id 
     WHERE
     s.enabled = 1
     AND
     p.enabled = 1
+    AND
+    p.tg_id = ? 
+    AND 
+    p2.person_id IS NULL
+    ORDER BY s.id"""
+
+
+
+        c.execute(query, (str(tg_id), ))
+    else:
+
+    #     query = """SELECT s.id, s.fullname, p.tg_id
+    # from shifts s
+    # JOIN
+    # person
+    # p
+    # ON
+    # 1 = 1
+    # WHERE
+    # s.enabled = 1
+    # AND
+    # p.enabled = 1
+    # ORDER BY s.id"""
+
+        query = """SELECT s.id, s.fullname, p.tg_id
+    from shifts s
+    JOIN
+    person
+    p
+    ON
+    1 = 1
+    LEFT JOIN prohibited p2 
+    ON
+    p.id = p2.person_id AND
+    s.id = p2.shift_id 
+    WHERE
+    s.enabled = 1
+    AND
+    p.enabled = 1
+    AND 
+    p2.person_id IS NULL
     ORDER BY s.id"""
 
     # query = "SELECT id, fullname  FROM shifts s WHERE enabled = 1"
@@ -96,7 +139,8 @@ def get_chosen_shift(tg_id):
     query="""SELECT
 	c.priority,
 	s.fullname,
-	p.tg_id
+	p.tg_id,
+	s.id
 FROM
 	"current" c
 JOIN shifts s ON
@@ -714,6 +758,81 @@ WHERE
 
 #del_results_from_history()
 
+#def add_missed_in_current():
+
+def insert_shift_in_current(choice, pers_id, priority):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    #person_id = get_person_id_from_tg_id(tg_id)
+
+    query = """INSERT
+                        INTO
+                        CURRENT (person_id,
+                        shift_id,
+                        priority, datetime)
+                    VALUES (?, ?, ?, datetime('now'))"""
+
+    c.execute(query, (pers_id, choice, priority))
+    db.commit()
+    db.close()
+
+def get_chosen_shift_id(pers_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    query="""SELECT
+	c.shift_id
+FROM
+	"current" c
+JOIN person p ON
+	c.person_id = p.id
+WHERE
+	p.id = ?
+ORDER BY
+	c.priority"""
+
+    c.execute(query, (str(pers_id), ))
+    shifts = c.fetchall()
+    return shifts
+    db.commit()
+    db.close()
+
+def get_person_fio_from_tg_id (tg_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    query = """SELECT
+        p.fio
+    FROM
+        person p
+    WHERE
+        p.tg_id = ?"""
+    c.execute(query, (str(tg_id), ))
+    fio = c.fetchone()
+    return fio
+    db.commit()
+    db.close()
+
+#get_person_fio_from_tg_id(7050450693)
+def get_prohibuted ():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    query = """SELECT
+	p2.tg_id,
+	p.shift_id
+FROM
+	prohibited p
+JOIN person p2 ON
+	p.person_id = p2.id"""
+    c.execute(query)
+    prohibited = c.fetchall()
+    return prohibited
+    db.commit()
+    db.close()
+
+
+
+
+#get_chosen_shift_id (2)
 #===
 
 def close_base_conn():
