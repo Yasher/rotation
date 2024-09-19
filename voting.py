@@ -49,7 +49,7 @@ def voting():
 def add_missed_in_current(persons):
     for p in persons:
 
-        shifts = db.get_shifts_all (True, False)
+        shifts = db.get_shifts_all (True, False, 1, p)
         shifts_list = []
         for sh in shifts:
             shifts_list.append(sh[0])
