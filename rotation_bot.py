@@ -1,14 +1,4 @@
-## сделать проверку на то что tg_id из списка
-
-
 import time
-
-## предусмотреть, если юзер не нажмет кнопку, а напишет ченить
-
-## try except
-
-## если юзер нажимает /start  и данные в current по нему есть, то удалить данные в curent и пойти далее
-
 import telebot
 from telebot import types # для указание типов
 import db
@@ -78,7 +68,7 @@ def start(message):
 
         rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
         if db.is_user_admin(tg_id) == True:
-            rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Результат"),
+            rkm.add(types.KeyboardButton("/start"), types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Результат"),
                     types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"), types.KeyboardButton("Я прожался"))
 
             global hello
@@ -90,7 +80,7 @@ def start(message):
             bot.register_next_step_handler(msg, user_handler)
             # user_handler(msg)
         else:
-            rkm.add(types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"), types.KeyboardButton("Я прожался"))
+            rkm.add(types.KeyboardButton("/start"), types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"), types.KeyboardButton("Я прожался"))
             msg = bot.send_message(message.chat.id, "Привет " + db.get_person_fio_from_tg_id(tg_id)[0], reply_markup=rkm)
             bot.register_next_step_handler(msg, user_handler)
 
@@ -105,7 +95,6 @@ def user_handler (message):
         #markup.add(types.InlineKeyboardButton("Да", callback_data="yes_period"))
         #markup.add(types.InlineKeyboardButton("Нет", callback_data= "no_period"))
         msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup)
-
     elif (message.text == "Выборы"):
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
@@ -325,6 +314,7 @@ def callback_worker(call):
                         text_button1 = "Данные записаны в базу!!!"
                         msg3 = bot.edit_message_text(chat_id=call.message.chat.id, message_id=msg2.message_id, text=text_button1)
 
+
                         chosen = db.get_chosen_shift(tg_id)
                         message_chosen=""
                         n_ch = 1
@@ -335,7 +325,7 @@ def callback_worker(call):
                         msg5 = bot.send_message(chat_id=call.message.chat.id, text=message_chosen)
                         # global choice
                         #msg6 = bot.send_message(chat_id=call.message.chat.id, text="Это ваш окончательный выбор?", reply_markup=make_inline_markup_ifnotshifts("final_choice"))
-
+                        bot.send_message(chat_id=call.message.chat.id, text="Нажми \"Я прожался\", если это твой окончательный выбор.")
                 else:
                     i += 1
             except Exception as error:
@@ -375,5 +365,12 @@ def callback_worker(call):
                                      text=text_button2, reply_markup=make_markup(tg_id))
 
 
-
-bot.polling(none_stop=True)
+while True:
+    try:
+        bot.infinity_polling(timeout=10, long_polling_timeout = 5)
+    except RequestException as err:
+        print(err)
+        print('* Connection failed, waiting to reconnect...')
+        time.sleep(15)
+        print('* Reconnecting.')
+#bot.polling(none_stop=True)
