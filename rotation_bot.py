@@ -65,11 +65,11 @@ def start(message):
     if db.get_person_id_from_tg_id(tg_id) == 0:
         bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
     else:
-
+#Кнопки меню
         rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
         if db.is_user_admin(tg_id) == True:
             rkm.add(types.KeyboardButton("/start"), types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Результат"),
-                    types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"), types.KeyboardButton("Я прожался"))
+                    types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"), types.KeyboardButton("История"), types.KeyboardButton("Я прожался"))
 
             global hello
             if hello == 0:
@@ -92,8 +92,6 @@ def user_handler (message):
         period_text = db.get_current_period("normal")
         msg = bot.send_message(message.chat.id, "Текущий период: " + period_text)
         markup = make_inline_markup_ifnotshifts("period")
-        #markup.add(types.InlineKeyboardButton("Да", callback_data="yes_period"))
-        #markup.add(types.InlineKeyboardButton("Нет", callback_data= "no_period"))
         msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup)
     elif (message.text == "Выборы"):
         if db.check_shifts_persons_count() == False:
@@ -135,6 +133,11 @@ def user_handler (message):
             delete_userdata_from_choice(message.from_user.id)
             get_count(message.from_user.id)
             msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=make_markup(message.from_user.id))
+    elif (message.text == "История"):
+        msgtext = make_msgtext_history()
+        bot.send_message(message.chat.id, msgtext)
+        markup = make_inline_markup_ifnotshifts("history")
+        msg = bot.send_message(message.chat.id, "Удалить строку?", reply_markup=markup)
     elif (message.text == "Результат"):
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
@@ -225,6 +228,35 @@ def all_entered_data():
     else:
         return False
 
+
+def make_msgtext_history(id = 0):
+    msgtext = ""
+    period_text = db.get_current_period("curr_period_base")
+    #period1 = db.get_current_period("curr_period_base")
+    #period2 = db.get_current_period("curr_period+1_base")
+    result = db.get_history(id)
+    num=1
+    for l in result:
+        #msgtext += str(num) + ". " + l[0] + "\t" + l[1] + "\t" + l[2] + "\n"
+        msgtext += str(l[0]) + "\t" + l[1] + "\t" + l[2] + "\t" + l[3] + "\n"
+        num+=1
+    #num = db.get_person_count(True)
+    #num_p = db.get_person_count(False)
+    if id == 0:
+        msgtext = "<b>История за период " + period_text +":</b>\n" + msgtext
+    else:
+        msgtext = "Удаляем? " + msgtext
+
+    return msgtext
+
+def all_entered_data():
+    num = db.get_person_count(True)
+    num_p = db.get_person_count(False)
+    if num_p == num:
+        return True
+    else:
+        return False
+
 def make_inline_markup_ifnotshifts(part):
     markup = types.InlineKeyboardMarkup()
     if part != "results":
@@ -232,7 +264,6 @@ def make_inline_markup_ifnotshifts(part):
         markup.add(types.InlineKeyboardButton("Нет", callback_data= "no_" + str(part)))
     elif part == "results":
         markup.add(types.InlineKeyboardButton("Удалить", callback_data="del_" + str(part)))
-        # markup.add(types.InlineKeyboardButton("Перезаписать", callback_data= "update_" + str(part)))
     return markup
 
 def year_input(message):
@@ -240,6 +271,7 @@ def year_input(message):
     year = message.text
     msg = bot.send_message(message.chat.id, "Введите месяц XX")
     bot.register_next_step_handler(msg, month_input)
+
 
 def month_input (message):
     global month
@@ -249,7 +281,12 @@ def month_input (message):
     db.clear_entered_data_in_person()
     db.set_admin_msg(False)
 
-
+def del_str_history (message):
+    msgtext = make_msgtext_history(message.text)
+    global history_id
+    history_id = message.text
+    markup = make_inline_markup_ifnotshifts("history_del")
+    bot.send_message(message.chat.id, msgtext, reply_markup=markup)
 
 def get_count (tg_id):
     count = 0
@@ -275,23 +312,26 @@ def callback_worker(call):
     elif call.data == "no_period":
         print("no_period")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
-        #bot.register_next_step_handler(msg, user_handler)
+    elif call.data == "yes_history":
+        msg = bot.send_message(call.message.chat.id, "Введите номер строки для удаления")
+        bot.register_next_step_handler(msg, del_str_history)
+    elif call.data == "no_history":
+        msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
+    elif call.data == "yes_history_del":
+        db.del_str_history(history_id)
+        msg = bot.send_message(call.message.chat.id, "Строка удалена из базы")
+    elif call.data == "no_history_del":
+        msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
     elif call.data == "yes_vote":
         voting.voting()
         msg = bot.send_message(call.message.chat.id, "Выборы проведены!")
-        #bot.register_next_step_handler(msg, user_handler)
     elif call.data == "no_vote":
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
-        #bot.register_next_step_handler(msg, user_handler)
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
-
     else:
-
-
         tg_id = call.from_user.id
-
         text_button1=""
         text_button2=""
         # for item in shifts:         # обходим все смены разрешенные сотрудникам

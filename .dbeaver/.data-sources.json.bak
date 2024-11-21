@@ -1,20 +1,6 @@
 {
 	"folders": {},
 	"connections": {
-		"sqlite_jdbc-18f766d06e0-14de31273bef91e9": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "db_test",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/pythonProject2/db_test",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/db_test",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
 		"sqlite_jdbc-18fa0371ff3-cb93e8b6c648145": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
@@ -43,14 +29,14 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-190e9f2a894-32625ba55f30e78c": {
+		"sqlite_jdbc-19221a2f5de-2942ab46cadac7ec": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
-			"name": "rotation202407252050.db",
+			"name": "rotation_20240924_final_10-11.db",
 			"save-password": true,
 			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation202407252050.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation202407252050.db",
+				"database": "/home/yasher/PycharmProjects/backup/rotation_20240924_final_10-11.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_20240924_final_10-11.db",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,
@@ -67,7 +53,7 @@
 			"confirm-execute": false,
 			"confirm-data-change": false,
 			"smart-commit": false,
-			"smart-commit-recover": false,
+			"smart-commit-recover": true,
 			"auto-close-transactions": true,
 			"close-transactions-period": 1800,
 			"auto-close-connections": true,

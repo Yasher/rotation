@@ -1,20 +1,6 @@
 {
 	"folders": {},
 	"connections": {
-		"sqlite_jdbc-18f766d06e0-14de31273bef91e9": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "db_test",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/pythonProject2/db_test",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/db_test",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
 		"sqlite_jdbc-18fa0371ff3-cb93e8b6c648145": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
@@ -29,7 +15,35 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-18fa3cd00ab-6471fecb85ea55a": {
+		"sqlite_jdbc-19221a2f5de-2942ab46cadac7ec": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation_20240924_final_10-11.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/backup/rotation_20240924_final_10-11.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_20240924_final_10-11.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-1934f09b26a-2d9a162693a7b839": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation_10_11.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/backup/rotation_10_11.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_10_11.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-1934f3e0e96-539be4d078599674": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
 			"name": "rotation.db",
@@ -37,34 +51,6 @@
 			"configuration": {
 				"database": "/home/yasher/PycharmProjects/pythonProject2/rotation.db",
 				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/rotation.db",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
-		"sqlite_jdbc-190e9f2a894-32625ba55f30e78c": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "rotation202407252050.db",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation202407252050.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation202407252050.db",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
-		"sqlite_jdbc-192068a7000-68291b21f2092f99": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": ".db",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation_final_08-09 (copy).db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_final_08-09 (copy).db",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,

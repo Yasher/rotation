@@ -252,7 +252,50 @@ ORDER BY
     db.commit()
     db.close()
 
-#t = get_voting_table()
+def get_history(id = 0):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    period1 = get_current_period("curr_period_base")
+    period2 = get_current_period("curr_period+1_base")
+
+    query = """SELECT
+	h.id,
+	h.period,
+	p.fio,
+	s.fullname
+FROM
+	history h
+JOIN person p ON
+	h.person_id = p.id
+JOIN shifts s ON
+	h.shift_id = s.id
+WHERE
+"""
+    if id == 0:
+       	query += "h.period >= \"" + period1 + "\" AND h.period <= \"" + period2 + "\""
+    else:
+        query += "h.id = " + str(id)
+    c.execute(query)
+    return c.fetchall()
+
+    db.commit()
+    db.close()
+
+def del_str_history(history_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+
+    q = """DELETE
+FROM
+	history
+WHERE
+	id = """ + history_id
+    c.execute(q)
+    db.commit()
+    db.close()
+
+#d = get_history("2024-10-01 00:00:00", "2024-11-01 00:00:00")
 def get_person_count(entered):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
@@ -724,13 +767,20 @@ FROM
 
     if str(arg) == "normal":
         period_text = month1 + "." + str(period1.year)
+        return period_text
     if str(arg) == "curr_period":
         period_text = str(period1.year) + "-" + month1
+        return period_text
     if str(arg) == "curr_period+1":
-
         period_text = str(period2.year) + "-" + month2
+        return period_text
+    if str(arg) == "curr_period_base":
+        period_text = str(period1.year) + "-" + month1 + "-01 00:00:00"
+        return period_text
+    if str(arg) == "curr_period+1_base":
+        period_text = str(period2.year) + "-" + month2 + "-01 00:00:00"
+        return period_text
 
-    return period_text
     db.commit()
     db.close()
 
