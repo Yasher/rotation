@@ -395,6 +395,24 @@ ORDER BY p2.person_id """
     db.commit()
     db.close()
 
+def get_shift_name (shift_id):
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    q = """SELECT
+	s.fullname
+FROM
+	shifts s
+WHERE
+	s.id = """
+    q += str(shift_id)
+    c.execute(q)
+    shift = c.fetchone()
+    return  shift
+    db.commit()
+    db.close()
+
+#print (get_shift_name(1)[0])
+
 #Запись коэффициентов на основе исторических данных - коэф-т для каждого сотрудника по каждой смене.
 #Проводить перед запуском. При инициализации админом и выборе периода ротации
 def insert_shift_rates ():
@@ -452,14 +470,17 @@ def insert_choice_test(choice, tg_id):
     db.close()
 
 #####
-def get_winners(prt, shift, count, persons_out, nominees):
+def get_winners(prt, shift, count, persons_out, nominees, print):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
-    q="""SELECT
-	c.person_id,
-	r.rate,
-	p.employment_date 
+    q = """SELECT"""
+    if print == False:
+        q += """ c.person_id,"""
+    else:
+        q += """ p.fio,"""
+    q += """ r.rate,
+	DATE (p.employment_date) 
 FROM
 	"current" c
 JOIN rates r ON c.person_id = r.person_id AND c.shift_id = r.shift_id

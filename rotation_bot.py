@@ -144,26 +144,10 @@ def user_handler (message):
         else:
             voting.voting()
 
-            #msgtext = ""
-
-
-            # list_entered = db.get_users_entered_data(True)
-
-
-            # result = db.get_voting_table()
-            # for l in result:
-            #     msgtext += l[0] + "\t\t\t\t\t\t" + l[1] + "\n"
-            #
-            # num = db.get_person_count(True)
-            # num_p = db.get_person_count(False)
-            # if num_p == num:
-            #     msgtext = "<b>ИТОГОВЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
-            #     if db.check_settings_admin_msg() == False:
-            #         bot.send_message(db.get_admin_tg_id(), msgtext)
-            # else:
-            #     msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
             msgtext = make_msgtext_results()
             bot.send_message(message.chat.id, msgtext)
+            markup = make_inline_markup_ifnotshifts("scheme")
+            msg = bot.send_message(message.chat.id, "Показать схему выдачи смен?", reply_markup=markup)
 
         #bot.send_message(db.get_admin_tg_id(), "Привет от бота")
 
@@ -302,6 +286,10 @@ def get_count (tg_id):
     print("count_shifts")
     print(count_shifts)
 
+def send_scheme_tg (chat_id):
+    with open("scheme.txt", "r") as file:
+        bot.send_document(chat_id, file, visible_file_name="scheme.txt")
+
 @bot.callback_query_handler(func=lambda call: True)   ### при нажатии на кнопку смены:
 def callback_worker(call):
 
@@ -330,6 +318,13 @@ def callback_worker(call):
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
+    elif call.data == "yes_scheme":
+        send_scheme_tg(call.message.chat.id)
+        #msg = bot.send_message(call.message.chat.id, "Ща")
+        #db.del_str_history(history_id)
+        #msg = bot.send_message(call.message.chat.id, "Строка удалена из базы")
+    elif call.data == "no_scheme":
+        msg = bot.send_message(call.message.chat.id, "Понял Принял")
     else:
         tg_id = call.from_user.id
         text_button1=""

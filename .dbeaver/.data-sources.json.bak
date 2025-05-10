@@ -15,7 +15,7 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-18fa3cd00ab-6471fecb85ea55a": {
+		"sqlite_jdbc-193509ab1aa-44dea1488988f7bc": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
 			"name": "rotation.db",
@@ -29,14 +29,42 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-19221a2f5de-2942ab46cadac7ec": {
+		"sqlite_jdbc-1935144af2b-65156757bcf5ad80": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
-			"name": "rotation_20240924_final_10-11.db",
+			"name": "rotation_ttt.db",
 			"save-password": true,
 			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation_20240924_final_10-11.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_20240924_final_10-11.db",
+				"database": "/home/yasher/PycharmProjects/backup/rotation_ttt.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_ttt.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-1947fb152a9-715b234389ad2690": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation_1201_final.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/backup/rotation_1201_final.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_1201_final.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-1947fb382b3-5549385950089154": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation_1201_final1.db",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/backup/rotation_1201_final1.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_1201_final1.db",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,
