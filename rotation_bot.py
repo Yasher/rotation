@@ -197,10 +197,10 @@ def make_msgtext_results():
     #num = db.get_person_count(True)
     #num_p = db.get_person_count(False)
     if all_entered_data():
-        msgtext = "<b>ИТОГОВЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
+        msgtext = "<b>ИТОГОВЫЕ РЕЗУЛЬТАТЫ </b> на период " + str(db.get_current_period("normal_print")) + ": \n" + msgtext
 
     else:
-        msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ:</b>\n" + msgtext
+        msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ</b>на период " + str(db.get_current_period("normal_print")) + ": \n" + msgtext
 
     return msgtext
 

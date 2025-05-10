@@ -15,48 +15,6 @@
 				"auth-model": "native"
 			}
 		},
-		"sqlite_jdbc-1935144af2b-65156757bcf5ad80": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "rotation_ttt.db",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation_ttt.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_ttt.db",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
-		"sqlite_jdbc-1947fb152a9-715b234389ad2690": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "rotation_1201_final.db",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation_1201_final.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_1201_final.db",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
-		"sqlite_jdbc-1947fb382b3-5549385950089154": {
-			"provider": "sqlite",
-			"driver": "sqlite_jdbc",
-			"name": "rotation_1201_final1.db",
-			"save-password": true,
-			"configuration": {
-				"database": "/home/yasher/PycharmProjects/backup/rotation_1201_final1.db",
-				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/backup/rotation_1201_final1.db",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"closeIdleConnection": true,
-				"auth-model": "native"
-			}
-		},
 		"sqlite_jdbc-1948bdbc60b-574155e4752e3078": {
 			"provider": "sqlite",
 			"driver": "sqlite_jdbc",
@@ -65,6 +23,20 @@
 			"configuration": {
 				"database": "/home/yasher/mnt/rotation.db",
 				"url": "jdbc:sqlite:/home/yasher/mnt/rotation.db",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"sqlite_jdbc-196b7a51a7f-7faf866df2b78b9e": {
+			"provider": "sqlite",
+			"driver": "sqlite_jdbc",
+			"name": "rotation.db local",
+			"save-password": true,
+			"configuration": {
+				"database": "/home/yasher/PycharmProjects/pythonProject2/rotation.db",
+				"url": "jdbc:sqlite:/home/yasher/PycharmProjects/pythonProject2/rotation.db",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,

@@ -789,6 +789,9 @@ FROM
     if str(arg) == "normal":
         period_text = month1 + "." + str(period1.year)
         return period_text
+    if str(arg) == "normal_print":
+        period_text = month1 + "-" + month2 + "." + str(period1.year)
+        return period_text
     if str(arg) == "curr_period":
         period_text = str(period1.year) + "-" + month1
         return period_text
