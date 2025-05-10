@@ -200,7 +200,7 @@ def make_msgtext_results():
         msgtext = "<b>ИТОГОВЫЕ РЕЗУЛЬТАТЫ </b> на период " + str(db.get_current_period("normal_print")) + ": \n" + msgtext
 
     else:
-        msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ</b>на период " + str(db.get_current_period("normal_print")) + ": \n" + msgtext
+        msgtext = "<b>ПРОМЕЖУТОЧНЫЕ РЕЗУЛЬТАТЫ </b>на период " + str(db.get_current_period("normal_print")) + ": \n" + msgtext
 
     return msgtext
 
