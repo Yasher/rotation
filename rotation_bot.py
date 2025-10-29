@@ -1,3 +1,6 @@
+import logging
+import signal
+import sys
 import time
 import telebot
 from telebot import types # для указание типов
@@ -6,6 +9,19 @@ import config
 import voting
 
 bot = telebot.TeleBot(config.config['token'], parse_mode='HTML')
+
+# 1) Успокоим болтливость telebot (опционально)
+telebot.logger.setLevel(logging.WARNING)  # или logging.ERROR
+
+# 2) Грейсфул-шатдаун по сигналам
+def shutdown_handler(signum, frame):
+    try:
+        bot.stop_polling()   # корректно прервёт infinity_polling
+    finally:
+        sys.exit(0)
+
+signal.signal(signal.SIGINT, shutdown_handler)   # Ctrl+C
+signal.signal(signal.SIGTERM, shutdown_handler)  # systemd/docker stop и т.п.
 
 shifts = db.get_shifts() # получаем список кортежей [(id_смены, имя_смены, tg_id), (x,x,x) (y,y,y)]
 
@@ -66,10 +82,16 @@ def start(message):
         bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
     else:
 #Кнопки меню
-        rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
+        rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3, is_persistent=True, one_time_keyboard=False)
         if db.is_user_admin(tg_id) == True:
-            rkm.add(types.KeyboardButton("/start"), types.KeyboardButton("Выбор смен"), types.KeyboardButton("Период"), types.KeyboardButton("Результат"),
-                    types.KeyboardButton("Запись результатов"), types.KeyboardButton("Подмена"), types.KeyboardButton("История"), types.KeyboardButton("Я прожался"))
+            rkm.add(types.KeyboardButton("/start"),
+                    types.KeyboardButton("Выбор смен"),
+                    types.KeyboardButton("Период"),
+                    types.KeyboardButton("Результат"),
+                    types.KeyboardButton("Запись результатов"),
+                    types.KeyboardButton("Подмена"),
+                    types.KeyboardButton("История"),
+                    types.KeyboardButton("Я прожался"))
 
             global hello
             if hello == 0:
@@ -80,7 +102,10 @@ def start(message):
             bot.register_next_step_handler(msg, user_handler)
             # user_handler(msg)
         else:
-            rkm.add(types.KeyboardButton("/start"), types.KeyboardButton("Выбор смен"), types.KeyboardButton("Результат"), types.KeyboardButton("Я прожался"))
+            rkm.add(types.KeyboardButton("/start"),
+                    types.KeyboardButton("Выбор смен"),
+                    types.KeyboardButton("Результат"),
+                    types.KeyboardButton("Я прожался"))
             msg = bot.send_message(message.chat.id, "Привет " + db.get_person_fio_from_tg_id(tg_id)[0], reply_markup=rkm)
             bot.register_next_step_handler(msg, user_handler)
 
@@ -401,11 +426,26 @@ def callback_worker(call):
 
 
 while True:
-    try:
-        bot.infinity_polling(timeout=10, long_polling_timeout = 5)
-    except RequestException as err:
-        print(err)
-        print('* Connection failed, waiting to reconnect...')
-        time.sleep(15)
-        print('* Reconnecting.')
+    # try:
+    #     bot.infinity_polling(timeout=10, long_polling_timeout = 5)
+    # except RequestException as err:
+    #     print(err)
+    #     print('* Connection failed, waiting to reconnect...')
+    #     time.sleep(15)
+    #     print('* Reconnecting.')
 #bot.polling(none_stop=True)
+    try:
+        bot.infinity_polling(
+            timeout=60,  # таймаут HTTP-сессии
+            long_polling_timeout=60,  # таймаут long-poll запроса
+            skip_pending=True  # не заглатывать старые апдейты при старте
+        )
+    except KeyboardInterrupt:
+        pass  # уже обработали сигнал выше
+    except Exception:
+        telebot.logger.exception("Unhandled exception in polling")
+    finally:
+        bot.stop_polling()
+
+
+
