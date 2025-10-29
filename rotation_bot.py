@@ -1,6 +1,8 @@
 import logging
 import signal
 import sys
+from telebot.apihelper import ApiTelegramException
+
 import time
 import telebot
 from telebot import types # для указание типов
@@ -421,9 +423,17 @@ def callback_worker(call):
         else:
             text_button2 = text_button
 
-        msg4 = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+        try:        # глушим ошибку (__init__.py:1221 MainThread) ERROR - TeleBot: "Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
+
+            msg4 = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                      text=text_button2, reply_markup=make_markup(tg_id))
 
+        except ApiTelegramException as e:
+
+            if 'message is not modified' in str(e):
+                pass
+            else:
+                raise  # остальные ошибки всё-таки пробрасываем дальше
 
 while True:
     # try:
