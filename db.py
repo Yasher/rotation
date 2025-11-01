@@ -1,12 +1,16 @@
 import datetime
 import sqlite3
 import calendar
+import logging
+
+logger = logging.getLogger("db")
+
 
 db = sqlite3.connect('rotation.db')
 c = db.cursor()
 
 
-def get_shifts (tg_id=0):
+def get_shifts(tg_id=0):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     if tg_id != 0:
@@ -137,21 +141,21 @@ def get_chosen_shift(tg_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     query="""SELECT
-	c.priority,
-	s.fullname,
-	p.tg_id,
-	s.id
+    c.priority,
+    s.fullname,
+    p.tg_id,
+    s.id
 FROM
-	"current" c
+    "current" c
 JOIN shifts s ON
-	c.shift_id = s.id
+    c.shift_id = s.id
 JOIN person p ON
-	c.person_id = p.id
+    c.person_id = p.id
 WHERE
-	p.tg_id = ?
+    p.tg_id = ?
 ORDER BY
-	p.tg_id,
-	c.priority"""
+    p.tg_id,
+    c.priority"""
 
     c.execute(query, (str(tg_id), ))
     shifts = c.fetchall()
@@ -164,9 +168,9 @@ def delete_user_from_current(tg_id):
     c = db.cursor()
     query = """DELETE
 FROM
-	"current"
+    "current"
 WHERE
-	"current".person_id = ?"""
+    "current".person_id = ?"""
     id = get_person_id_from_tg_id(tg_id)
 
     c.execute(query, (str(id),))
@@ -181,20 +185,20 @@ def check_shifts_persons_count():
     persons = 0
 
     query = """SELECT
-	SUM(s.quant)
+    SUM(s.quant)
 FROM
-	shifts s
+    shifts s
 WHERE
-	s.enabled = 1"""
+    s.enabled = 1"""
 
     c.execute(query)
     shifts = c.fetchone()[0]
     query = """SELECT
-	sum(p.enabled)
+    sum(p.enabled)
 FROM
-	person p
+    person p
 WHERE
-	enabled = 1"""
+    enabled = 1"""
 
     c.execute(query)
     persons = c.fetchone()[0]
@@ -235,16 +239,16 @@ def get_voting_table():
     c = db.cursor()
 
     query = """SELECT
-	p.fio,
-	s.fullname
+    p.fio,
+    s.fullname
 FROM
-	vote v
+    vote v
 JOIN person p ON
-	v.person_id = p.id
+    v.person_id = p.id
 JOIN shifts s ON
-	v.shift_id = s.id
+    v.shift_id = s.id
 ORDER BY
-	s.id
+    s.id
     """
     c.execute(query)
     return c.fetchall()
@@ -260,20 +264,20 @@ def get_history(id = 0):
     period2 = get_current_period("curr_period+1_base")
 
     query = """SELECT
-	h.id,
-	h.period,
-	p.fio,
-	s.fullname
+    h.id,
+    h.period,
+    p.fio,
+    s.fullname
 FROM
-	history h
+    history h
 JOIN person p ON
-	h.person_id = p.id
+    h.person_id = p.id
 JOIN shifts s ON
-	h.shift_id = s.id
+    h.shift_id = s.id
 WHERE
 """
     if id == 0:
-       	query += "h.period >= \"" + period1 + "\" AND h.period <= \"" + period2 + "\""
+        query += "h.period >= \"" + period1 + "\" AND h.period <= \"" + period2 + "\""
     else:
         query += "h.id = " + str(id)
     c.execute(query)
@@ -288,9 +292,9 @@ def del_str_history(history_id):
 
     q = """DELETE
 FROM
-	history
+    history
 WHERE
-	id = """ + history_id
+    id = """ + history_id
     c.execute(q)
     db.commit()
     db.close()
@@ -301,11 +305,11 @@ def get_person_count(entered):
     c = db.cursor()
 
     query = """SELECT
-    	sum(p.enabled)
+        sum(p.enabled)
     FROM
-    	person p
+        person p
     WHERE
-    	enabled = 1 """
+        enabled = 1 """
     if entered == True:
         query += "AND entered_data = 1"
 
@@ -331,14 +335,14 @@ def get_shift_rates (shift):
     #for i in range(p_count):
     for i in persons.keys():
         query = """SELECT
-	period 
+    period 
 from
-	history h
+    history h
 WHERE
-	shift_id = ?
+    shift_id = ?
 AND person_id = ?
 ORDER BY
-	period DESC
+    period DESC
 LIMIT 1
 """
 #Здесь можно будет поставить ограничение по давности проверки
@@ -368,16 +372,16 @@ def get_shifts_all(count, with_disabled, addcurrent = 0, pers_id = 0):
 
     if addcurrent != 0:
         query = """SELECT
-	s.id
+    s.id
 FROM
-	shifts s
+    shifts s
 JOIN person p 
 ON 1=1
 LEFT JOIN prohibited p2 
 ON s.id = p2.shift_id AND p.id =p2.person_id 
 WHERE
-	s.enabled = 1 AND
-	p.id = ?
+    s.enabled = 1 AND
+    p.id = ?
 ORDER BY p2.person_id """
         c.execute(query, (str (pers_id),))
     else:
@@ -399,11 +403,11 @@ def get_shift_name (shift_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q = """SELECT
-	s.fullname
+    s.fullname
 FROM
-	shifts s
+    shifts s
 WHERE
-	s.id = """
+    s.id = """
     q += str(shift_id)
     c.execute(q)
     shift = c.fetchone()
@@ -480,13 +484,13 @@ def get_winners(prt, shift, count, persons_out, nominees, print):
     else:
         q += """ p.fio,"""
     q += """ r.rate,
-	DATE (p.employment_date) 
+    DATE (p.employment_date) 
 FROM
-	"current" c
+    "current" c
 JOIN rates r ON c.person_id = r.person_id AND c.shift_id = r.shift_id
 JOIN person p ON c.person_id = p.id 
 WHERE
-	c.priority = ?
+    c.priority = ?
 AND c.shift_id  = ? """
     for key, value in persons_out.items():
         if value == False:
@@ -516,11 +520,11 @@ def get_persons_id():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
-	id
+    id
 FROM
-	person p
+    person p
 WHERE
-	enabled = 1
+    enabled = 1
     """
     c.execute(q)
     persons_out = {}
@@ -583,11 +587,11 @@ def is_user_admin(person_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
-	admin
+    admin
 FROM
-	person
+    person
 WHERE
-	tg_id = ?"""
+    tg_id = ?"""
     c.execute(q, (str(person_id),))
     if c.fetchone()[0] == 1:
         return True
@@ -601,11 +605,11 @@ def get_admin_tg_id():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
-	tg_id
+    tg_id
 FROM
-	person
+    person
 WHERE
-	admin = 1"""
+    admin = 1"""
     c.execute(q)
     admin_tg_id = c.fetchone()
 
@@ -618,10 +622,10 @@ def get_users_entered_data(entered):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q = """SELECT
-	fio,
-	tg_id
+    fio,
+    tg_id
 FROM
-	person p
+    person p
 WHERE enabled = 1 AND """
     if entered == True:
         q += "entered_data = 1"
@@ -674,11 +678,11 @@ def enter_data_by_user(tg_ig_current):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""update
-	person
+    person
 SET
-	entered_data = 1
+    entered_data = 1
 WHERE
-	tg_id = ?"""
+    tg_id = ?"""
 
     c.execute(q, (tg_ig_current, ))
 
@@ -708,9 +712,9 @@ def clear_entered_data_in_person():
     c = db.cursor()
 
     q = """update
-	person
+    person
 SET
-	entered_data = 0"""
+    entered_data = 0"""
 
     c.execute(q)
     db.commit()
@@ -722,23 +726,23 @@ def insert_voting_results_into_history():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q = """SELECT
-	s.rotation_period
+    s.rotation_period
 FROM
-	settings s 
+    settings s 
 """
     c.execute(q)
     period = c.fetchone()[0]
     q = """INSERT
-	INTO
-	history (person_id,
-	shift_id,
-	period)
+    INTO
+    history (person_id,
+    shift_id,
+    period)
 SELECT
-	person_id ,
-	shift_id,
-	? period
+    person_id ,
+    shift_id,
+    ? period
 FROM
-	vote v"""
+    vote v"""
     #period = '2024-12-01 00:00:00'
     c.execute(q, (period,))
 
@@ -767,9 +771,9 @@ def get_current_period(arg):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     q="""SELECT
-	s.rotation_period
+    s.rotation_period
 FROM
-	settings s
+    settings s
 """
     c.execute(q)
     period = c.fetchone()[0]
@@ -827,18 +831,18 @@ def del_results_from_history():
     period = str(get_current_period("curr_period"))
     q = """DELETE
 FROM
-	history
+    history
 WHERE
-	period LIKE '""" + period + "%'"
+    period LIKE '""" + period + "%'"
 
     c.execute(q)
 
     period = str(get_current_period("curr_period+1"))
     q = """DELETE
     FROM
-    	history
+        history
     WHERE
-    	period LIKE '""" + period + "%'"
+        period LIKE '""" + period + "%'"
 
     c.execute(q)
 
@@ -871,15 +875,15 @@ def get_chosen_shift_id(pers_id):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     query="""SELECT
-	c.shift_id
+    c.shift_id
 FROM
-	"current" c
+    "current" c
 JOIN person p ON
-	c.person_id = p.id
+    c.person_id = p.id
 WHERE
-	p.id = ?
+    p.id = ?
 ORDER BY
-	c.priority"""
+    c.priority"""
 
     c.execute(query, (str(pers_id), ))
     shifts = c.fetchall()
@@ -907,12 +911,12 @@ def get_prohibuted ():
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     query = """SELECT
-	p2.tg_id,
-	p.shift_id
+    p2.tg_id,
+    p.shift_id
 FROM
-	prohibited p
+    prohibited p
 JOIN person p2 ON
-	p.person_id = p2.id"""
+    p.person_id = p2.id"""
     c.execute(query)
     prohibited = c.fetchall()
     return prohibited
@@ -938,7 +942,6 @@ def close_base_conn():
 
 db.commit()
 db.close()
-
 
 
 

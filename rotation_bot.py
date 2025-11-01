@@ -2,6 +2,11 @@ import logging
 import signal
 import sys
 from telebot.apihelper import ApiTelegramException
+import logging
+from logging_setup import setup_logging
+from logging_setup import ContextAdapter
+
+setup_logging()
 
 import time
 import telebot
@@ -10,6 +15,10 @@ import db
 import config
 import voting
 
+#Логирование
+logger = logging.getLogger("rotation_bot")
+
+###
 bot = telebot.TeleBot(config.config['token'], parse_mode='HTML')
 
 # 1) Успокоим болтливость telebot (опционально)
@@ -77,11 +86,21 @@ def delete_userdata_from_choice(tg_id):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    log = ContextAdapter(logger, {
+        "tg_id": message.from_user.id,
+        "chat_id": message.chat.id,
+        "user": message.from_user.username,
+    })
+    log.info("Command /start received")
+    #log.info("Command /start received User = %s Chat = %s", message.from_user.id, message.chat.id)
+
+
     global tg_id
     tg_id = message.from_user.id
 
     if db.get_person_id_from_tg_id(tg_id) == 0:
         bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
+        log.info("Незарегистрированный казачок!!!")
     else:
 #Кнопки меню
         rkm = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=3, is_persistent=True, one_time_keyboard=False)
@@ -114,15 +133,22 @@ def start(message):
 
 # @bot.message_handler(commands=['start']) #создаем команду
 def user_handler (message):
+    log = ContextAdapter(logger, {
+        "tg_id": message.from_user.id,
+        "chat_id": message.chat.id,
+        "user": message.from_user.username,
+    })
     msg = message
     if (message.text == "Период"):
         period_text = db.get_current_period("normal")
         msg = bot.send_message(message.chat.id, "Текущий период: " + period_text)
         markup = make_inline_markup_ifnotshifts("period")
         msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup)
+        log.info("Нажата кнопка - Период")
     elif (message.text == "Выборы"):
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+            log.info("Количество сотрудников != количеству смен!!!!!")
         else:
         ### Проверка пуста ли таблица vote, если не пуста, то сообщить (спросить перезаписать)
             if db.check_table_is_empty("vote") == True:
@@ -137,21 +163,26 @@ def user_handler (message):
 
     elif (message.text == "Запись результатов"):
         ###Проверка есть ли в history уже данные этой ротации
+        log.info("Нажата кнопка - Запись результатов")
         if db.check_current_vote_in_history() == False:
             db.insert_voting_results_into_history()
             msg = bot.send_message(message.chat.id, "Данные записаны!!")
+            log.info("Данные записаны!!")
             #bot.register_next_step_handler(msg, user_handler)
         else:
             markup = make_inline_markup_ifnotshifts("results")
-            msg = bot.send_message(message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)   #### Сделаьб вопрос перезаписать или нет
+            msg = bot.send_message(message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)
+            log.info("Данные уже есть в таблице!")#### Сделаьб вопрос перезаписать или нет
             #bot.register_next_step_handler(msg, user_handler)
     elif (message.text == "Подмена"):
-        print("Подмена")
+        log.info("Нажата кнопка - Подмена")
         msg = bot.send_message(message.chat.id, "Эта кнопка пока не работает 🤷‍♂️ ")
         #bot.register_next_step_handler(msg, user_handler)
     elif (message.text == "Выбор смен"):
+        log.info("Нажата кнопка - Выбор смен")
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+            log.info("Количество сотрудников != количеству смен!!!!!")
         else:
             #global tg_id
             db.delete_user_from_current(message.from_user.id)
@@ -159,15 +190,27 @@ def user_handler (message):
             add_userdata_to_shifts(message.from_user.id)
             delete_userdata_from_choice(message.from_user.id)
             get_count(message.from_user.id)
-            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=make_markup(message.from_user.id))
+            markup = make_markup(message.from_user.id)
+            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=markup)
+
+            log_markup = "Смены на выбор:  \n"
+            for row in markup.keyboard:
+                texts = [button.text for button in row]
+                log_markup += (str(texts) + "\n")
+
+            log.info(log_markup)
+
     elif (message.text == "История"):
+        log.info("Нажата кнопка - История")
         msgtext = make_msgtext_history()
         bot.send_message(message.chat.id, msgtext)
         markup = make_inline_markup_ifnotshifts("history")
         msg = bot.send_message(message.chat.id, "Удалить строку?", reply_markup=markup)
     elif (message.text == "Результат"):
+        log.info("Нажата кнопка - Результат")
         if db.check_shifts_persons_count() == False:
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+            log.info("Количество сотрудников != количеству смен!!!!!")
         else:
             voting.voting()
 
@@ -179,6 +222,7 @@ def user_handler (message):
         #bot.send_message(db.get_admin_tg_id(), "Привет от бота")
 
     elif (message.text == "Я прожался"):
+        log.info("Нажата кнопка - Я прожался")
         tg_id = msg.from_user.id
         db.enter_data_by_user(tg_id)
         bot.send_message(message.chat.id, "Молодец!")
@@ -211,6 +255,7 @@ def user_handler (message):
 
 
             bot.send_message(message.chat.id, messagetext)
+            log.info(messagetext)
     bot.register_next_step_handler(msg, user_handler)
 
 
@@ -318,41 +363,63 @@ def send_scheme_tg (chat_id):
         bot.send_document(chat_id, file, visible_file_name="scheme.txt")
 
 @bot.callback_query_handler(func=lambda call: True)   ### при нажатии на кнопку смены:
+
+
 def callback_worker(call):
 
+    log = ContextAdapter(logger, {
+        "tg_id": call.from_user.id,
+        "chat_id": call.message.chat.id,
+        "user": call.from_user.username,
+    })
+
+
     if call.data == "yes_period":
+        log.info("Нажата inline-кнопка - Да")
         print("yes_period")
         msg = bot.send_message(call.message.chat.id, "Введите год XXXX")
         bot.register_next_step_handler(msg, year_input)
     elif call.data == "no_period":
+        log.info("Нажата inline-кнопка - Нет")
         print("no_period")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
     elif call.data == "yes_history":
+        log.info("Нажата inline-кнопка - Да")
         msg = bot.send_message(call.message.chat.id, "Введите номер строки для удаления")
         bot.register_next_step_handler(msg, del_str_history)
     elif call.data == "no_history":
+        log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
     elif call.data == "yes_history_del":
+        log.info("Нажата inline-кнопка - Да")
         db.del_str_history(history_id)
         msg = bot.send_message(call.message.chat.id, "Строка удалена из базы")
     elif call.data == "no_history_del":
+        log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
     elif call.data == "yes_vote":
+        log.info("Нажата inline-кнопка - Да")
         voting.voting()
         msg = bot.send_message(call.message.chat.id, "Выборы проведены!")
     elif call.data == "no_vote":
+        log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
     elif call.data == "yes_scheme":
+        log.info("Нажата inline-кнопка - Да")
         send_scheme_tg(call.message.chat.id)
         #msg = bot.send_message(call.message.chat.id, "Ща")
         #db.del_str_history(history_id)
         #msg = bot.send_message(call.message.chat.id, "Строка удалена из базы")
     elif call.data == "no_scheme":
+        log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Понял Принял")
     else:
+
+        log.info("Нажата inline-кнопка - " + call.data)
+
         tg_id = call.from_user.id
         text_button1=""
         text_button2=""
@@ -385,6 +452,8 @@ def callback_worker(call):
                             message_chosen += str(n_ch) + ". " + sh[1] + "\n"
                             n_ch += 1
                         msg5 = bot.send_message(chat_id=call.message.chat.id, text=message_chosen)
+                        log.info("Выбраны смены: \n" + message_chosen)
+
                         # global choice
                         #msg6 = bot.send_message(chat_id=call.message.chat.id, text="Это ваш окончательный выбор?", reply_markup=make_inline_markup_ifnotshifts("final_choice"))
                         bot.send_message(chat_id=call.message.chat.id, text="Нажми \"Я прожался\", если это твой окончательный выбор.")
@@ -434,6 +503,8 @@ def callback_worker(call):
                 pass
             else:
                 raise  # остальные ошибки всё-таки пробрасываем дальше
+
+
 
 while True:
     # try:

@@ -1,8 +1,8 @@
 import datetime
-
 import db
+import logging
 
-
+logger = logging.getLogger("voting")
 
 #РАСЧЕТ rate ПЕРЕД voting
 def voting():
@@ -62,8 +62,7 @@ def voting():
                 with open("scheme.txt", "a") as file:
                     file.write(f"Смена {db.get_shift_name(shift[0])[0]} уже занята!" + "\n")
 
-#voting()
-            #убираем 1 или 2 у смены в счетчике
+
 
 def add_missed_in_current(persons):
     for p in persons:
@@ -87,14 +86,6 @@ def add_missed_in_current(persons):
 
         i=1
 
-
-#add_missed_in_current(10)
-
-
-
-        #функция выбора 1 или 2х человек из argue
-
-        #проверка вышла ли смена? - дальше
 
 
 
