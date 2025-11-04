@@ -14,7 +14,7 @@ def voting():
     #shifts_out = -\\- по сменам id:колво невыбраных чел и минусовать выбраных
     shifts_out = db.get_shift_out()
     #добавляем в current новые смены и новых пользователей, если они есть (для корректного более-менее промежуточного результата)
-    add_missed_in_current(db.get_persons_id())
+    #add_missed_in_current(db.get_persons_id())
 
     db.del_vote() #очищаем таблицу vote
     shifts = db.get_shifts_all(True, False) #список смен
@@ -64,27 +64,9 @@ def voting():
 
 
 
-def add_missed_in_current(persons):
-    for p in persons:
-
-        shifts = db.get_shifts_all (True, False, 1, p)
-        shifts_list = []
-        for sh in shifts:
-            shifts_list.append(sh[0])
-        current_shifts = db.get_chosen_shift_id(p)
-        current_shifts_list = []
-        for c_sh in current_shifts:
-            current_shifts_list.append(c_sh[0])
-        count_current_shifts = len(current_shifts_list)
 
 
-        for sh in shifts_list:
-            if current_shifts_list.count(sh) == 0:
-                db.insert_shift_in_current(sh, p, count_current_shifts)
-                count_current_shifts+=1
-            #sh = current_shifts_list.count(1)
 
-        i=1
 
 
 

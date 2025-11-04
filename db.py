@@ -10,7 +10,7 @@ db = sqlite3.connect('rotation.db')
 c = db.cursor()
 
 
-def get_shifts(tg_id=0):
+def get_shifts(tg_id=0, enabled=True):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
     if tg_id != 0:
@@ -49,24 +49,8 @@ def get_shifts(tg_id=0):
     AND 
     p2.person_id IS NULL
     ORDER BY s.id"""
-
-
-
         c.execute(query, (str(tg_id), ))
     else:
-
-    #     query = """SELECT s.id, s.fullname, p.tg_id
-    # from shifts s
-    # JOIN
-    # person
-    # p
-    # ON
-    # 1 = 1
-    # WHERE
-    # s.enabled = 1
-    # AND
-    # p.enabled = 1
-    # ORDER BY s.id"""
 
         query = """SELECT s.id, s.fullname, p.tg_id
     from shifts s
@@ -86,9 +70,18 @@ def get_shifts(tg_id=0):
     AND 
     p2.person_id IS NULL
     ORDER BY s.id"""
-
-    # query = "SELECT id, fullname  FROM shifts s WHERE enabled = 1"
         c.execute(query)
+
+    if(enabled!=True):
+        query = """SELECT
+	id
+FROM
+	shifts s
+where
+	enabled = 0"""
+        c.execute(query)
+
+
     shifts = c.fetchall()
     return shifts
     db.commit()
@@ -113,6 +106,8 @@ def get_person_id_from_tg_id(tg_id):
 
     db.commit()
     db.close()
+
+#print(get_person_id_from_tg_id(4))
 
 def insert_choice(choice, tg_id):
     db = sqlite3.connect('rotation.db')
@@ -366,7 +361,7 @@ LIMIT 1
 #delete_user_from_current('181564144')
 # choice = [[2, '181564144'], [4, '181564144'], [5, '181564144'], [2, '663014633'], [1, '181564144']]
 # insert_choice(choice,"181564144")
-def get_shifts_all(count, with_disabled, addcurrent = 0, pers_id = 0):
+def get_shifts_all(count, with_disabled, addcurrent = 0, pers_id = 0, tg_id = 0):
     db = sqlite3.connect('rotation.db')
     c = db.cursor()
 
@@ -380,10 +375,17 @@ ON 1=1
 LEFT JOIN prohibited p2 
 ON s.id = p2.shift_id AND p.id =p2.person_id 
 WHERE
-    s.enabled = 1 AND
-    p.id = ?
-ORDER BY p2.person_id """
-        c.execute(query, (str (pers_id),))
+    s.enabled = 1 AND """
+        if(pers_id!=0):
+            query += """
+            p.id = ?
+            ORDER BY p2.person_id """
+            c.execute(query, (str (pers_id),))
+        if(tg_id!=0):
+            query += """
+            p.tg_id = ?
+            ORDER BY p2.person_id """
+            c.execute(query, (str(tg_id),))
     else:
         if count == False:
             query = """SELECT s.id FROM shifts s"""
@@ -542,6 +544,10 @@ def insert_winners(person_id, shift_id):
     c.execute(q, (person_id, shift_id))
     db.commit()
     db.close()
+
+
+
+
 
 def del_vote():
     db = sqlite3.connect('rotation.db')
@@ -937,7 +943,46 @@ def close_base_conn():
 
 #close_base_conn()
 
+def del_extra_shifts():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    query = """DELETE
+FROM
+	current
+WHERE
+	current.shift_id IN (
+	SELECT
+		id
+	FROM
+		shifts
+	WHERE
+		enabled = 0
+);
+"""
 
+    c.execute(query)
+    db.commit()
+    db.close()
+
+def del_extra_persons():
+    db = sqlite3.connect('rotation.db')
+    c = db.cursor()
+    query = """DELETE
+FROM
+	current
+WHERE
+	current.person_id IN (
+	SELECT
+		id
+	FROM
+		person 
+	WHERE
+		enabled = 0
+);"""
+
+    c.execute(query)
+    db.commit()
+    db.close()
 
 
 db.commit()

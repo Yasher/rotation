@@ -40,7 +40,8 @@ choice = []
 
 count_shifts = {} # словарь key - tg_id, value - количество смен
 
-text_button = "Выбери смены 🙈:"
+text_button = ("Выбери смены 🙈 \n"
+               "Тыкай кнопки в порядке убывания приоритета, пока все кнопки не исчезнут")
 
 hello = 0
 
@@ -114,13 +115,13 @@ def start(message):
                     types.KeyboardButton("История"),
                     types.KeyboardButton("Я прожался"))
 
-            global hello
-            if hello == 0:
-                msg = bot.send_message(message.chat.id, "Привет!", reply_markup=rkm)
-                msg = bot.send_message(message.chat.id, "Вы администратор")
-                hello = 1
+            #global hello
+            #if hello == 0:
+            msg = bot.send_message(message.chat.id, "Привет!", reply_markup=rkm)
+            msg = bot.send_message(message.chat.id, "Вы администратор")
+                #hello = 1
             # a=1
-            bot.register_next_step_handler(msg, user_handler)
+            #bot.register_next_step_handler(msg, user_handler)
             # user_handler(msg)
         else:
             rkm.add(types.KeyboardButton("/start"),
@@ -128,10 +129,14 @@ def start(message):
                     types.KeyboardButton("Результат"),
                     types.KeyboardButton("Я прожался"))
             msg = bot.send_message(message.chat.id, "Привет " + db.get_person_fio_from_tg_id(tg_id)[0], reply_markup=rkm)
-            bot.register_next_step_handler(msg, user_handler)
+            #bot.register_next_step_handler(msg, user_handler)
 
 
 # @bot.message_handler(commands=['start']) #создаем команду
+@bot.message_handler(commands=['menu'])
+def show_menu(message):
+    start(message)
+@bot.message_handler(func=lambda m: True)
 def user_handler (message):
     log = ContextAdapter(logger, {
         "tg_id": message.from_user.id,
@@ -212,6 +217,7 @@ def user_handler (message):
             bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
             log.info("Количество сотрудников != количеству смен!!!!!")
         else:
+            add_missed_in_current([], tg_id=message.from_user.id)
             voting.voting()
 
             msgtext = make_msgtext_results()
@@ -362,6 +368,55 @@ def send_scheme_tg (chat_id):
     with open("scheme.txt", "r") as file:
         bot.send_document(chat_id, file, visible_file_name="scheme.txt")
 
+
+def add_missed_in_current(persons, tg_id=0):
+
+
+    if(tg_id==0):
+        db.del_extra_shifts()
+        db.del_extra_persons()
+
+        for p in persons:
+
+            shifts = db.get_shifts_all (True, False, 1, p)
+            shifts_list = []
+
+            for sh in shifts:
+                shifts_list.append(sh[0])
+            current_shifts = db.get_chosen_shift_id(p)
+            current_shifts_list = []
+
+            for c_sh in current_shifts:
+                current_shifts_list.append(c_sh[0])
+            count_current_shifts = len(current_shifts_list)
+
+            for sh in shifts_list:
+                if current_shifts_list.count(sh) == 0:
+                    db.insert_shift_in_current(sh, p, count_current_shifts)
+                    count_current_shifts+=1
+    else:
+        p_id = db.get_person_id_from_tg_id(tg_id)
+        shifts = db.get_shifts_all(True, False, 1, p_id)
+        shifts_list = []
+
+        for sh in shifts:
+            shifts_list.append(sh[0])
+        current_shifts = db.get_chosen_shift_id(p_id)
+        current_shifts_list = []
+
+        for c_sh in current_shifts:
+            current_shifts_list.append(c_sh[0])
+        count_current_shifts = len(current_shifts_list)
+
+        for sh in shifts_list:
+            if current_shifts_list.count(sh) == 0:
+                db.insert_shift_in_current(sh, p_id, count_current_shifts)
+                count_current_shifts += 1
+
+
+
+
+
 @bot.callback_query_handler(func=lambda call: True)   ### при нажатии на кнопку смены:
 
 
@@ -376,12 +431,19 @@ def callback_worker(call):
 
     if call.data == "yes_period":
         log.info("Нажата inline-кнопка - Да")
-        print("yes_period")
-        msg = bot.send_message(call.message.chat.id, "Введите год XXXX")
-        bot.register_next_step_handler(msg, year_input)
+        markup = make_inline_markup_ifnotshifts("period_check")
+        msg = bot.send_message(call.message.chat.id, "Перед изменением периода актуализируйте пользователей, смены, ограничения по сменам в соответствующих таблицах! \n"
+                                                     "Сделано?", reply_markup=markup)
     elif call.data == "no_period":
         log.info("Нажата inline-кнопка - Нет")
-        print("no_period")
+        msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
+    if call.data == "yes_period_check":
+        log.info("Нажата inline-кнопка - Да")
+        add_missed_in_current(db.get_persons_id())
+        msg = bot.send_message(call.message.chat.id, "Введите год XXXX")
+        bot.register_next_step_handler(msg, year_input)
+    elif call.data == "no_period_check":
+        log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
     elif call.data == "yes_history":
         log.info("Нажата inline-кнопка - Да")
@@ -438,6 +500,7 @@ def callback_worker(call):
                         #msg = bot.send_message(chat_id=call.message.chat.id, text="Запись данных...")
                         text_button1 = "Запись данных..."
                         msg2 = bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=text_button1)
+                        db.delete_user_from_current(tg_id)
                         db.insert_choice(choice, tg_id)
                         time.sleep(0.5)
                         text_button1 = "Данные записаны в базу!!!"
