@@ -34,15 +34,11 @@ def shutdown_handler(signum, frame):
 signal.signal(signal.SIGINT, shutdown_handler)   # Ctrl+C
 signal.signal(signal.SIGTERM, shutdown_handler)  # systemd/docker stop и т.п.
 
+###  Заглушка - Проведение работ
 
-MAINTENANCE = True
-#
-# @bot.message_handler(func=lambda message: True)
-# def maintenance_block(message):
-#     if MAINTENANCE:
-#         bot.send_message(message.chat.id, "⚙️ Сейчас проводятся технические работы.\nПопробуйте позже.")
-#         return
+MAINTENANCE = False
 
+###
 
 shifts = db.get_shifts() # получаем список кортежей [(id_смены, имя_смены, tg_id), (x,x,x) (y,y,y)]
 
@@ -97,6 +93,10 @@ def delete_userdata_from_choice(tg_id):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    if MAINTENANCE:
+        bot.send_message(message.chat.id, "⚙️ Сейчас проводятся технические работы.\nПопробуйте позже.")
+        return
+
     log = ContextAdapter(logger, {
         "tg_id": message.from_user.id,
         "chat_id": message.chat.id,
@@ -148,6 +148,11 @@ def show_menu(message):
     start(message)
 @bot.message_handler(func=lambda m: True)
 def user_handler (message):
+
+    if MAINTENANCE:
+        bot.send_message(message.chat.id, "⚙️ Сейчас проводятся технические работы.\nПопробуйте позже.")
+        return
+
     log = ContextAdapter(logger, {
         "tg_id": message.from_user.id,
         "chat_id": message.chat.id,
