@@ -144,126 +144,132 @@ def user_handler (message):
         "user": message.from_user.username,
         "fio": db.get_person_fio_from_tg_id(message.from_user.id),
     })
-    msg = message
-    if (message.text == "Период"):
-        period_text = db.get_current_period("normal")
-        msg = bot.send_message(message.chat.id, "Текущий период: " + period_text)
-        markup = make_inline_markup_ifnotshifts("period")
-        msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup)
-        log.info("Нажата кнопка - Период")
-    elif (message.text == "Выборы"):
-        if db.check_shifts_persons_count() == False:
-            bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
-            log.info("Количество сотрудников != количеству смен!!!!!")
-        else:
-        ### Проверка пуста ли таблица vote, если не пуста, то сообщить (спросить перезаписать)
-            if db.check_table_is_empty("vote") == True:
-                voting.voting()
-                msg = bot.send_message(message.chat.id, "Выборы проведены!")
+
+    if db.get_person_id_from_tg_id(message.from_user.id) == 0:
+        bot.send_message(chat_id=message.chat.id, text="А кaзачок-то засланный!!!")
+        log.info("Незарегистрированный казачок!!! | msg: " + message.text)
+    else:
+
+        msg = message
+        if (message.text == "Период"):
+            period_text = db.get_current_period("normal")
+            msg = bot.send_message(message.chat.id, "Текущий период: " + period_text)
+            markup = make_inline_markup_ifnotshifts("period")
+            msg = bot.send_message(message.chat.id, "Обновить?", reply_markup = markup)
+            log.info("Нажата кнопка - Период")
+        elif (message.text == "Выборы"):
+            if db.check_shifts_persons_count() == False:
+                bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+                log.info("Количество сотрудников != количеству смен!!!!!")
+            else:
+            ### Проверка пуста ли таблица vote, если не пуста, то сообщить (спросить перезаписать)
+                if db.check_table_is_empty("vote") == True:
+                    voting.voting()
+                    msg = bot.send_message(message.chat.id, "Выборы проведены!")
+                    #bot.register_next_step_handler(msg, user_handler)
+                    user_handler(msg)
+                else:
+                    msg = bot.send_message(message.chat.id, "Таблица выборов не пуста.")
+                    markup = make_inline_markup_ifnotshifts("vote")
+                    msg = bot.send_message(message.chat.id, "Обновить?", reply_markup=markup)
+
+        elif (message.text == "Запись результатов"):
+            ###Проверка есть ли в history уже данные этой ротации
+            log.info("Нажата кнопка - Запись результатов")
+            if db.check_current_vote_in_history() == False:
+                db.insert_voting_results_into_history()
+                msg = bot.send_message(message.chat.id, "Данные записаны!!")
+                log.info("Данные записаны!!")
                 #bot.register_next_step_handler(msg, user_handler)
-                user_handler(msg)
             else:
-                msg = bot.send_message(message.chat.id, "Таблица выборов не пуста.")
-                markup = make_inline_markup_ifnotshifts("vote")
-                msg = bot.send_message(message.chat.id, "Обновить?", reply_markup=markup)
-
-    elif (message.text == "Запись результатов"):
-        ###Проверка есть ли в history уже данные этой ротации
-        log.info("Нажата кнопка - Запись результатов")
-        if db.check_current_vote_in_history() == False:
-            db.insert_voting_results_into_history()
-            msg = bot.send_message(message.chat.id, "Данные записаны!!")
-            log.info("Данные записаны!!")
+                markup = make_inline_markup_ifnotshifts("results")
+                msg = bot.send_message(message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)
+                log.info("Данные уже есть в таблице!")#### Сделаьб вопрос перезаписать или нет
+                #bot.register_next_step_handler(msg, user_handler)
+        elif (message.text == "Подмена"):
+            log.info("Нажата кнопка - Подмена")
+            msg = bot.send_message(message.chat.id, "Эта кнопка пока не работает 🤷‍♂️ ")
             #bot.register_next_step_handler(msg, user_handler)
-        else:
-            markup = make_inline_markup_ifnotshifts("results")
-            msg = bot.send_message(message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)
-            log.info("Данные уже есть в таблице!")#### Сделаьб вопрос перезаписать или нет
-            #bot.register_next_step_handler(msg, user_handler)
-    elif (message.text == "Подмена"):
-        log.info("Нажата кнопка - Подмена")
-        msg = bot.send_message(message.chat.id, "Эта кнопка пока не работает 🤷‍♂️ ")
-        #bot.register_next_step_handler(msg, user_handler)
-    elif (message.text == "Выбор смен"):
-        log.info("Нажата кнопка - Выбор смен")
-        if db.check_shifts_persons_count() == False:
-            bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
-            log.info("Количество сотрудников != количеству смен!!!!!")
-        else:
-            #global tg_id
-            db.delete_user_from_current(message.from_user.id)
-            delete_userdata_from_shifts(message.from_user.id)
-            add_userdata_to_shifts(message.from_user.id)
-            delete_userdata_from_choice(message.from_user.id)
-            get_count(message.from_user.id)
-            markup = make_markup(message.from_user.id)
-            msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=markup)
+        elif (message.text == "Выбор смен"):
+            log.info("Нажата кнопка - Выбор смен")
+            if db.check_shifts_persons_count() == False:
+                bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+                log.info("Количество сотрудников != количеству смен!!!!!")
+            else:
+                #global tg_id
+                db.delete_user_from_current(message.from_user.id)
+                delete_userdata_from_shifts(message.from_user.id)
+                add_userdata_to_shifts(message.from_user.id)
+                delete_userdata_from_choice(message.from_user.id)
+                get_count(message.from_user.id)
+                markup = make_markup(message.from_user.id)
+                msg1 = bot.send_message(message.chat.id, text_button.format(message.from_user), reply_markup=markup)
 
-            log_markup = "Смены на выбор:  \n"
-            for row in markup.keyboard:
-                texts = [button.text for button in row]
-                log_markup += (str(texts) + "\n")
+                log_markup = "Смены на выбор:  \n"
+                for row in markup.keyboard:
+                    texts = [button.text for button in row]
+                    log_markup += (str(texts) + "\n")
 
-            log.info(log_markup)
+                log.info(log_markup)
 
-    elif (message.text == "История"):
-        log.info("Нажата кнопка - История")
-        msgtext = make_msgtext_history()
-        bot.send_message(message.chat.id, msgtext)
-        markup = make_inline_markup_ifnotshifts("history")
-        msg = bot.send_message(message.chat.id, "Удалить строку?", reply_markup=markup)
-    elif (message.text == "Результат"):
-        log.info("Нажата кнопка - Результат")
-        if db.check_shifts_persons_count() == False:
-            bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
-            log.info("Количество сотрудников != количеству смен!!!!!")
-        else:
-            add_missed_in_current([], tg_id=message.from_user.id)
-            voting.voting()
-
-            msgtext = make_msgtext_results()
+        elif (message.text == "История"):
+            log.info("Нажата кнопка - История")
+            msgtext = make_msgtext_history()
             bot.send_message(message.chat.id, msgtext)
-            markup = make_inline_markup_ifnotshifts("scheme")
-            msg = bot.send_message(message.chat.id, "Показать схему выдачи смен?", reply_markup=markup)
-
-        #bot.send_message(db.get_admin_tg_id(), "Привет от бота")
-
-    elif (message.text == "Я прожался"):
-        log.info("Нажата кнопка - Я прожался")
-        tg_id = msg.from_user.id
-        db.enter_data_by_user(tg_id)
-        bot.send_message(message.chat.id, "Молодец!")
-        if all_entered_data():
-            if db.check_settings_admin_msg() == False:
-                bot.send_message(db.get_admin_tg_id(), make_msgtext_results())
-                db.set_admin_msg(True)
-
-
-        if db.is_user_admin(tg_id) == True:
-            list_entered_print = ""
-            list_not_entered_print = ""
-            messagetext = ""
-            num = 0
-            list_entered = db.get_users_entered_data(True)
-            for person in list_entered:
-                list_entered_print += person[0] + "\n"
-                num += 1
-            list_not_entered = db.get_users_entered_data(False)
-            for person in list_not_entered:
-                list_not_entered_print += person[0] + "\n"
-            num_p = db.get_person_count(False)
-            if  num_p == num:
-                notif = "Прожаты ВСЕ: \n"
-                messagetext = notif + list_entered_print
+            markup = make_inline_markup_ifnotshifts("history")
+            msg = bot.send_message(message.chat.id, "Удалить строку?", reply_markup=markup)
+        elif (message.text == "Результат"):
+            log.info("Нажата кнопка - Результат")
+            if db.check_shifts_persons_count() == False:
+                bot.send_message(chat_id=message.chat.id, text="Количество сотрудников != количеству смен!!!!!")
+                log.info("Количество сотрудников != количеству смен!!!!!")
             else:
-                notif = "Прожаты НЕ все: \n"
-                messagetext = notif + list_entered_print + "\n\n Остались: \n" + list_not_entered_print
+                add_missed_in_current([], tg_id=message.from_user.id)
+                voting.voting()
+
+                msgtext = make_msgtext_results()
+                bot.send_message(message.chat.id, msgtext)
+                markup = make_inline_markup_ifnotshifts("scheme")
+                msg = bot.send_message(message.chat.id, "Показать схему выдачи смен?", reply_markup=markup)
+
+            #bot.send_message(db.get_admin_tg_id(), "Привет от бота")
+
+        elif (message.text == "Я прожался"):
+            log.info("Нажата кнопка - Я прожался")
+            tg_id = msg.from_user.id
+            db.enter_data_by_user(tg_id)
+            bot.send_message(message.chat.id, "Молодец!")
+            if all_entered_data():
+                if db.check_settings_admin_msg() == False:
+                    bot.send_message(db.get_admin_tg_id(), make_msgtext_results())
+                    db.set_admin_msg(True)
+
+
+            if db.is_user_admin(tg_id) == True:
+                list_entered_print = ""
+                list_not_entered_print = ""
+                messagetext = ""
+                num = 0
+                list_entered = db.get_users_entered_data(True)
+                for person in list_entered:
+                    list_entered_print += person[0] + "\n"
+                    num += 1
+                list_not_entered = db.get_users_entered_data(False)
+                for person in list_not_entered:
+                    list_not_entered_print += person[0] + "\n"
+                num_p = db.get_person_count(False)
+                if  num_p == num:
+                    notif = "Прожаты ВСЕ: \n"
+                    messagetext = notif + list_entered_print
+                else:
+                    notif = "Прожаты НЕ все: \n"
+                    messagetext = notif + list_entered_print + "\n\n Остались: \n" + list_not_entered_print
 
 
 
-            bot.send_message(message.chat.id, messagetext)
-            log.info(messagetext)
-    bot.register_next_step_handler(msg, user_handler)
+                bot.send_message(message.chat.id, messagetext)
+                log.info(messagetext)
+        bot.register_next_step_handler(msg, user_handler)
 
 
 
