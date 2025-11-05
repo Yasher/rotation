@@ -191,16 +191,10 @@ def user_handler (message):
         elif (message.text == "Запись результатов"):
             ###Проверка есть ли в history уже данные этой ротации
             log.info("Нажата кнопка - Запись результатов")
-            if db.check_current_vote_in_history() == False:
-                db.insert_voting_results_into_history()
-                msg = bot.send_message(message.chat.id, "Данные записаны!!")
-                log.info("Данные записаны!!")
-                #bot.register_next_step_handler(msg, user_handler)
-            else:
-                markup = make_inline_markup_ifnotshifts("results")
-                msg = bot.send_message(message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)
-                log.info("Данные уже есть в таблице!")#### Сделаьб вопрос перезаписать или нет
-                #bot.register_next_step_handler(msg, user_handler)
+            markup = make_inline_markup_ifnotshifts("store")
+            msg = bot.send_message(message.chat.id, "Точно?", reply_markup=markup)
+
+
         elif (message.text == "Подмена"):
             log.info("Нажата кнопка - Подмена")
             msg = bot.send_message(message.chat.id, "Эта кнопка пока не работает 🤷‍♂️ ")
@@ -460,7 +454,7 @@ def callback_worker(call):
     elif call.data == "no_period":
         log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
-    if call.data == "yes_period_check":
+    elif call.data == "yes_period_check":
         log.info("Нажата inline-кнопка - Да")
         add_missed_in_current(db.get_persons_id())
         msg = bot.send_message(call.message.chat.id, "Введите год XXXX")
@@ -489,6 +483,18 @@ def callback_worker(call):
     elif call.data == "no_vote":
         log.info("Нажата inline-кнопка - Нет")
         msg = bot.send_message(call.message.chat.id, "Изменения отклонены")
+    elif call.data == "yes_store":
+        if db.check_current_vote_in_history() == False:
+            db.insert_voting_results_into_history()
+            msg = bot.send_message(call.message.chat.id, "Данные записаны!!")
+            log.info("Данные записаны!!")
+            # bot.register_next_step_handler(msg, user_handler)
+        else:
+            markup = make_inline_markup_ifnotshifts("results")
+            msg = bot.send_message(call.message.chat.id, "Данные уже есть в таблице!", reply_markup=markup)
+            log.info("Данные уже есть в таблице!")
+    elif call.data == "no_store":
+        msg = bot.send_message(call.message.chat.id, "Понял Принял Не записываем")
     elif call.data == "del_results":
         db.del_results_from_history()
         msg = bot.send_message(call.message.chat.id, "Данные удалены из истории")
