@@ -117,8 +117,8 @@ def start(message):
 
             #global hello
             #if hello == 0:
-            msg = bot.send_message(message.chat.id, "Привет!", reply_markup=rkm)
-            msg = bot.send_message(message.chat.id, "Вы администратор")
+            msg = bot.send_message(message.chat.id, "Привет!\n Вы администратор", reply_markup=rkm)
+            #msg = bot.send_message(message.chat.id, "Вы администратор")
                 #hello = 1
             # a=1
             #bot.register_next_step_handler(msg, user_handler)
@@ -142,6 +142,7 @@ def user_handler (message):
         "tg_id": message.from_user.id,
         "chat_id": message.chat.id,
         "user": message.from_user.username,
+        "fio": db.get_person_fio_from_tg_id(message.from_user.id),
     })
     msg = message
     if (message.text == "Период"):
@@ -426,6 +427,7 @@ def callback_worker(call):
         "tg_id": call.from_user.id,
         "chat_id": call.message.chat.id,
         "user": call.from_user.username,
+        "fio": db.get_person_fio_from_tg_id(message.from_user.id),
     })
 
 

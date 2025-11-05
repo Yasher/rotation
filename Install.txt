@@ -1,0 +1,45 @@
+mkdir -p /opt/rotation-bot
+useradd --system --no-create-home --shell /usr/sbin/nologin botuser
+cd /opt/rotation-bot
+git clone git@github.com:Yasher/rotation.git ./
+python3 -m venv venv
+source venv/bin/activate
+pip install -U pip
+pip install -r requirements.txt
+deactivate
+
+
+nano /etc/systemd/system/rotation-bot.service
+
+[Unit]
+Description=Rotation Telegram Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/rotation-bot
+ExecStart=/opt/rotation-bot/venv/bin/python /opt/rotation-bot/rotation_bot.py
+Environment=LOG_LEVEL=INFO
+Environment=TELEBOT_LEVEL=WARNING
+Environment=LOG_DIR=/opt/rotation-bot/logs
+User=botuser
+Group=botuser
+#EnvironmentFile=/opt/rotation-bot/.env
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+systemctl daemon-reload
+systemctl enable rotation-bot
+systemctl start rotation-bot
+systemctl status rotation-bot
+
+
+Логи можно смотреть 
+journalctl -u rotation-bot -f
+или
+
+tail -f /opt/rotation-bot/logs/bot.log
+
+
