@@ -34,6 +34,16 @@ def shutdown_handler(signum, frame):
 signal.signal(signal.SIGINT, shutdown_handler)   # Ctrl+C
 signal.signal(signal.SIGTERM, shutdown_handler)  # systemd/docker stop и т.п.
 
+
+MAINTENANCE = True
+#
+# @bot.message_handler(func=lambda message: True)
+# def maintenance_block(message):
+#     if MAINTENANCE:
+#         bot.send_message(message.chat.id, "⚙️ Сейчас проводятся технические работы.\nПопробуйте позже.")
+#         return
+
+
 shifts = db.get_shifts() # получаем список кортежей [(id_смены, имя_смены, tg_id), (x,x,x) (y,y,y)]
 
 choice = []
@@ -433,7 +443,7 @@ def callback_worker(call):
         "tg_id": call.from_user.id,
         "chat_id": call.message.chat.id,
         "user": call.from_user.username,
-        "fio": db.get_person_fio_from_tg_id(message.from_user.id),
+        "fio": db.get_person_fio_from_tg_id(call.from_user.id),
     })
 
 
